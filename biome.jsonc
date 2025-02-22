@@ -1,0 +1,177 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "vcs": { "enabled": false, "clientKind": "git", "useIgnoreFile": false },
+  "files": {
+    "ignoreUnknown": false,
+    "ignore": ["node_modules", ".vscode", ".nuxt"]
+  },
+  // Follow https://github.com/biomejs/biome/issues/3177 for updates to merging imports from same packages
+  "formatter": {
+    "enabled": true,
+    "useEditorconfig": true,
+    "formatWithErrors": false,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 80,
+    "attributePosition": "auto",
+    "bracketSpacing": true,
+    "ignore": [
+      "**/node_modules",
+      "**/.nuxt",
+      "**/package.json",
+      "**/tsconfig.json",
+      "**/.yarnrc.yml",
+      "**/package-lock.json",
+      "**/*README.md",
+      "**/.git*"
+    ]
+  },
+  "organizeImports": { "enabled": true },
+  "linter": {
+    "enabled": true,
+    // TODO: rsmith - add no relative import rule with Biome v2.0.0 custom rules (https://biomejs.dev/blog/roadmap-2025/#%EF%B8%8F-biome-20)
+    "rules": {
+      "recommended": true,
+      "performance": {
+        "noBarrelFile": "error",
+        "noReExportAll": "error"
+      },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": "warn",
+        "noUselessUndefinedInitialization": "error",
+        "noVoid": "warn",
+        "useDateNow": "error"
+      },
+      "correctness": {
+        "noUnusedFunctionParameters": "error",
+        "noUnusedImports": "error",
+        "noUnusedVariables": "error",
+        "noUnusedPrivateClassMembers": "warn",
+        "useArrayLiterals": "error"
+      },
+      "nursery": {
+        "noOctalEscape": "error",
+        // off until it is deemed important
+        // this would be more useful if it was no nested ternaries beyond n nests
+        "noNestedTernary": "off",
+        "noSubstr": "warn"
+      },
+      "style": {
+        /**
+         * 1. In files with a single export, it is already clear what that export
+         *    is, without further specifying with a "default" keyword.
+         * 2. In files with multiple exports, it is unclear which export you are
+         *    getting by default without first clicking in to the file to see
+         *    which is export is default.
+         * 3. When searching the codebase for usages of the export (e.g. the
+         *    import got broken and you can't "Find all references), the search
+         *    will miss default imports that aliased the export (e.g. `import
+         *    Buton from './Button'` vs. `import { Button } from './Button'`).
+         * 4. If you need to alias a named import to avoid collisions, you can do
+         *    so via `import { name as otherName }`.
+         * 5. If you `import Button from './Button'` expecting `Button` to be the
+         *    default export, it might be the case that `DifferentButton` is the
+         *    actual default export, but you have misled yourself to believe you
+         *    got `Button`, since that is what you typed and you got no feedback
+         *    to suggest it was not, in fact, importing `Button`.
+         *
+         * Further reading:
+         * https://humanwhocodes.com/blog/2019/01/stop-using-default-exports-javascript-module/
+         * https://dev.to/phuocng/avoid-using-default-exports-a1c
+         * https://www.freecodecamp.org/news/difference-between-default-and-named-exports-in-javascript/
+         *
+         * Ultimately it is a matter of opinion. The benefits of disallowing
+         * default exports outweigh the benefits of using defaults, at no extra
+         * cost to any developer.
+         */
+        "noDefaultExport": "warn",
+        "noNamespace": "warn",
+        "noNamespaceImport": "error",
+        "noNegationElse": "off",
+        "noShoutyConstants": "off",
+        "noYodaExpression": "warn",
+        "useCollapsedElseIf": "warn",
+        // T[] versus Array<T>
+        "useConsistentArrayType": "off",
+        "useDefaultSwitchClause": "error",
+        "useFilenamingConvention": {
+          "level": "warn",
+          "options": {
+            "strictCase": false,
+            "requireAscii": true,
+            "filenameCases": ["snake_case", "camelCase"]
+          }
+        },
+        "useShorthandAssign": "warn",
+        "useThrowNewError": "warn",
+        "useThrowOnlyError": "error"
+      },
+      "suspicious": {
+        "noEvolvingTypes": "info",
+        "noMisplacedAssertion": "info",
+        "useErrorMessage": "warn",
+        "useNumberToFixedDigitsArgument": "info",
+        "noConsole": {
+          "level": "warn",
+          "options": {
+            "allow": ["warn", "error", "info", "trace"]
+          }
+        }
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteProperties": "asNeeded",
+      "trailingCommas": "es5",
+      "semicolons": "always",
+      "indentStyle": "space",
+      "arrowParentheses": "always",
+      "bracketSameLine": false,
+      "quoteStyle": "single",
+      "attributePosition": "multiline",
+      "bracketSpacing": true
+    }
+  },
+  "overrides": [
+    {
+      "include": ["**/*.stories.tsx", "**/*.test.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": { "noConsole": "off" },
+          "style": {
+            "noDefaultExport": "off",
+            "noNonNullAssertion": "off"
+          }
+        }
+      }
+    },
+    {
+      "include": ["**/*.stories.tsx"],
+      "linter": {
+        "rules": {
+          "suspicious": { "noMisplacedAssertion": "off" }
+        }
+      }
+    },
+    {
+      "include": ["**/components/common/icons/**/*"],
+      "linter": {
+        "rules": {
+          // let the tcIcon filenames pass
+          "style": { "useFilenamingConvention": "off" }
+        }
+      }
+    },
+    {
+      "include": ["**/pages/**/*"],
+      "linter": {
+        "rules": {
+          // next.js pages router requires exporting a default
+          "style": { "noDefaultExport": "off" }
+        }
+      }
+    }
+  ]
+}

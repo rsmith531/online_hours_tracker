@@ -1,0 +1,6 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema-jsonc.json",
+  "ignoreDependencies": [
+    "@biomejs/biome" // linting and formatting package
+  ]
+}

@@ -7,7 +7,7 @@
     "css": "assets/css/tailwind.css",
     "baseColor": "slate",
     "cssVariables": true,
-    "prefix": ""
+    "prefix": "tw-"
   },
   "aliases": {
     "components": "@/components",

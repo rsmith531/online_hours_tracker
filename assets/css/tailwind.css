@@ -2,8 +2,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-/* @config "../../tailwind.config.js";
-@config "../../nuxt.config.js"; */
+@config "~/tailwind.config.js";
+/* @config "~/nuxt.config.js"; */
 @layer base {
   :root {
     --background: 0 0% 100%;

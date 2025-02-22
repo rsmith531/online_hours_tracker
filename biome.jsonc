@@ -52,7 +52,6 @@
       },
       "nursery": {
         "noOctalEscape": "error",
-        // off until it is deemed important
         // this would be more useful if it was no nested ternaries beyond n nests
         "noNestedTernary": "off",
         "noSubstr": "warn"
@@ -92,7 +91,7 @@
         "noShoutyConstants": "off",
         "noYodaExpression": "warn",
         "useCollapsedElseIf": "warn",
-        // T[] versus Array<T>
+        // T[] versus Array<T> syntax
         "useConsistentArrayType": "off",
         "useDefaultSwitchClause": "error",
         "useFilenamingConvention": {
@@ -133,45 +132,5 @@
       "attributePosition": "multiline",
       "bracketSpacing": true
     }
-  },
-  "overrides": [
-    {
-      "include": ["**/*.stories.tsx", "**/*.test.ts"],
-      "linter": {
-        "rules": {
-          "suspicious": { "noConsole": "off" },
-          "style": {
-            "noDefaultExport": "off",
-            "noNonNullAssertion": "off"
-          }
-        }
-      }
-    },
-    {
-      "include": ["**/*.stories.tsx"],
-      "linter": {
-        "rules": {
-          "suspicious": { "noMisplacedAssertion": "off" }
-        }
-      }
-    },
-    {
-      "include": ["**/components/common/icons/**/*"],
-      "linter": {
-        "rules": {
-          // let the tcIcon filenames pass
-          "style": { "useFilenamingConvention": "off" }
-        }
-      }
-    },
-    {
-      "include": ["**/pages/**/*"],
-      "linter": {
-        "rules": {
-          // next.js pages router requires exporting a default
-          "style": { "noDefaultExport": "off" }
-        }
-      }
-    }
-  ]
+  }
 }

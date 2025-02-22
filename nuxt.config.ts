@@ -5,12 +5,22 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
-  modules: ['@nuxtjs/tailwindcss', 'shadcn-nuxt'],
+  modules: [
+    '@nuxtjs/tailwindcss',
+    'shadcn-nuxt',
+    // '@tailwindcss/postcss'
+  ],
+  // postcss: {
+  //   plugins: {
+  //     // tailwindcss: {},
+  //     // autoprefixer: {},
+  //     '@tailwindcss/postcss': {},
+  //   },
+  // },
   shadcn: {
     prefix: '',
     componentDir: './components',
   },
-  // css: ['~/public/assets/css/tailwind.css'],
   vite: {
     plugins: [tailwindcss()],
   },

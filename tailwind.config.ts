@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+
 // biome-ignore lint/style/noDefaultExport: came from scaffolding
 export default {
   darkMode: ['class'],
@@ -57,5 +58,8 @@ export default {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    require('tailwindcss-animate'),
+    // require('@tailwindcss/postcss')
+  ],
 };

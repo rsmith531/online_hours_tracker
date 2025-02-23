@@ -1,3 +1,5 @@
+<!-- FloatingButton.vue -->
+
 <template>
   <SpeedDial 
     v-if="workday"
@@ -17,10 +19,7 @@
 </template>
 
 <script setup>
-import SpeedDial from 'primevue/speeddial';
 import { computed } from 'vue';
-import { useToast } from 'primevue/usetoast';
-import { workdayService } from '~/helpers/workdayService.ts';
 
 const toast = useToast();
 const { updateWorkday, workday } = workdayService();

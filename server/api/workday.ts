@@ -1,7 +1,9 @@
 // ~/server/api/workday.ts
-import { defineEventHandler, readBody } from 'h3';
 
-const mockWorkdayData: { start_time: Date | null; end_time: Date | null } = {
+import { defineEventHandler, readBody } from 'h3';
+import type { WorkDay } from '~/utils/workdayService';
+
+const mockWorkdayData: WorkDay = {
   // In-memory mock data (will be reset on server restart)
   start_time: new Date(),
   end_time: null,
@@ -9,7 +11,7 @@ const mockWorkdayData: { start_time: Date | null; end_time: Date | null } = {
 
 export default defineEventHandler(async (event) => {
   if (event.method === 'GET') {
-    return mockWorkdayData; // Return current mock data for GET requests
+    return mockWorkdayData;
   }
   if (event.method === 'POST') {
     const body = await readBody(event);
@@ -21,7 +23,7 @@ export default defineEventHandler(async (event) => {
         mockWorkdayData.start_time = new Date();
         mockWorkdayData.end_time = null;
       }
-      return mockWorkdayData; // Return updated mock data after POST
+      return mockWorkdayData;
     }
   }
   return { message: 'Invalid request' };

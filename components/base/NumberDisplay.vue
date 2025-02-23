@@ -1,5 +1,5 @@
 <template>
-    <div
+    <Card
       :style="{
         height: '8rem',
         border: '1px solid grey',
@@ -12,12 +12,16 @@
         fontSize: '7rem',
         textAlign: 'center',
       }"
+    :class="{ 'text-xs-2rem': true, 'text-sm-7rem': true, 'height-xs-1rem': true, 'height-sm-1rem': true }"
     >
+    <template #content>
       {{ number }}
-    </div>
+    </template>
+    </Card>
   </template>
   
-  <script setup>
+<script setup>
+
 defineProps({
   number: {
     type: [Number, String],

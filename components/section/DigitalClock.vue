@@ -30,7 +30,6 @@
   </template>
   
 <script setup>
-import NumberDisplay from '~/components/base/NumberDisplay.vue';
 
 const props = defineProps({
   time: {
@@ -41,32 +40,46 @@ const props = defineProps({
 
 const displayTime = ref(props.time);
 let intervalId = null;
+const isMounted = ref(false);
 
+onMounted(() => {
+  isMounted.value = true;
+  if(props.time !== 0){
+    startInterval();
+  }
+});
 
 watch(
   () => props.time,
   (newTime) => {
     displayTime.value = newTime;
-
-    if (newTime !== 0) {
-      if (!intervalId) {
-        intervalId = setInterval(() => {
-          displayTime.value += 1000;
-        }, 1000);
+    if(isMounted.value){
+      if (newTime !== 0) {
+        startInterval();
+      } else {
+        clearIntervalIfSet();
       }
-    } else if (intervalId) {
-        clearInterval(intervalId);
-        intervalId = null;
-      }
-  },
-  { immediate: true }
+    }
+  }
 );
 
 onUnmounted(() => {
+  clearIntervalIfSet();
+});
+
+const startInterval = () => {
+  clearIntervalIfSet();
+  intervalId = setInterval(() => {
+    displayTime.value += 1000;
+  }, 1000);
+}
+
+const clearIntervalIfSet = () =>{
   if (intervalId) {
     clearInterval(intervalId);
+    intervalId = null;
   }
-});
+}
 
 const hours = computed(() => Math.floor(displayTime.value / (1000 * 60 * 60)));
 const minutes = computed(() =>

@@ -1,12 +1,13 @@
+// nuxt.config.ts
+
 import Aura from '@primeuix/themes/aura';
-import { workdayService } from './helpers/workdayService';
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 // biome-ignore lint/style/noDefaultExport: came from scaffolding
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
-  modules: ['@primevue/nuxt-module',"@hebilicious/vue-query-nuxt"],
+  modules: ['@primevue/nuxt-module', '@hebilicious/vue-query-nuxt'],
   primevue: {
     options: {
       theme: {
@@ -21,15 +22,8 @@ export default defineNuxtConfig({
     },
   ],
   runtimeConfig: {
-    workday: {
-      start_time: undefined,
-      end_time: undefined,
-
-    }
+    public: {
+      apiUrl: 'http://localhost:3000/api',
+    },
   },
-  hooks: {
-    'app:created': async () => {
-      await workdayService().refetch();
-    }
-  }
 });

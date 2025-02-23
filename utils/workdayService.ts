@@ -1,8 +1,10 @@
 // workdayService.ts
 
+import { useQuery, useMutation } from '@tanstack/vue-query';
+
 export function workdayService() {
   const toast = useToast();
-  
+
   // get the public apiUrl from nuxt.config.ts
   const runtimeConfig = useRuntimeConfig();
   const apiUrl = runtimeConfig.public.apiUrl || '/api';
@@ -21,8 +23,12 @@ export function workdayService() {
           throw new Error(`HTTP error! status: ${response.error}`);
         }
         return {
-          start_time: response.data.value.start_time ? new Date(response.data.value.start_time) : null,
-          end_time: response.data.value.end_time ? new Date(response.data.value.end_time) : null,
+          start_time: response.data.value.start_time
+            ? new Date(response.data.value.start_time)
+            : null,
+          end_time: response.data.value.end_time
+            ? new Date(response.data.value.end_time)
+            : null,
         };
       } catch (error) {
         console.error('Error fetching workday from API', error);
@@ -48,7 +54,9 @@ export function workdayService() {
           throw new Error(`HTTP error! status: ${response}`);
         }
         return {
-          start_time: response.start_time ? new Date(response.start_time) : null,
+          start_time: response.start_time
+            ? new Date(response.start_time)
+            : null,
           end_time: response.end_time ? new Date(response.end_time) : null,
         };
       } catch (error) {
@@ -75,12 +83,12 @@ export function workdayService() {
   return { workday, updateWorkday, isLoading, refetch };
 }
 
-  export interface WorkDay {
-    start_time: Date | null;
-    end_time: Date | null;
-  };
+export interface WorkDay {
+  start_time: Date | null;
+  end_time: Date | null;
+}
 
-  interface WorkdayResponse {
-    start_time: string | null;
-    end_time: string | null;
-  }
+interface WorkdayResponse {
+  start_time: string | null;
+  end_time: string | null;
+}

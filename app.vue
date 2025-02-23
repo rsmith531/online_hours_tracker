@@ -22,7 +22,6 @@
 </template>
 
 <script setup>
-import 'primeicons/primeicons.css';
 import { computed } from 'vue';
 import { VueQueryDevtools } from '@tanstack/vue-query-devtools';
 

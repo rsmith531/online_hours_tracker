@@ -38,7 +38,7 @@
         "noReExportAll": "error"
       },
       "complexity": {
-        "noExcessiveCognitiveComplexity": "warn",
+        "noExcessiveCognitiveComplexity": "off",
         "noUselessUndefinedInitialization": "error",
         "noVoid": "warn",
         "useDateNow": "error"
@@ -84,7 +84,7 @@
          * default exports outweigh the benefits of using defaults, at no extra
          * cost to any developer.
          */
-        "noDefaultExport": "warn",
+        "noDefaultExport": "off",
         "noNamespace": "warn",
         "noNamespaceImport": "error",
         "noNegationElse": "off",

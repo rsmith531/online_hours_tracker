@@ -151,7 +151,7 @@ enum SessionState {
   Closed = 'closed',
 }
 
-enum ActivityType {
+export enum ActivityType {
   Working = 'Working',
   OnBreak = 'OnBreak',
 }

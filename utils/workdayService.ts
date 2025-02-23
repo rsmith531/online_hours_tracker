@@ -1,6 +1,7 @@
 // ~/utils/workdayService.ts
 
 import { useQuery, useMutation } from '@tanstack/vue-query';
+import type { WorkdayApiResponse } from 'server/api/workday';
 
 export function workdayService() {
   const toast = useToast();
@@ -17,21 +18,13 @@ export function workdayService() {
     queryKey: ['workday'],
     queryFn: async (): Promise<WorkDay> => {
       try {
-        const response = await useFetch<WorkdayResponse>(`${apiUrl}/workday`);
-        if (!response.data || !response.data.value) {
-          console.error(response.error);
-          throw new Error(`HTTP error! status: ${response.error}`);
-        }
+        const response = await $fetch<WorkdayApiResponse>(`${apiUrl}/workday`);
         return {
-          start_time: response.data.value.start_time
-            ? new Date(response.data.value.start_time)
-            : null,
-          end_time: response.data.value.end_time
-            ? new Date(response.data.value.end_time)
-            : null,
+          start_time: response.start_time ? new Date(response.start_time) : null,
+          end_time: response.end_time ? new Date(response.end_time) : null,
         };
       } catch (error) {
-        console.error('Error fetching workday from API', error);
+        console.error('Error fetching workday from API: ', error);
         throw error;
       }
     },
@@ -43,16 +36,14 @@ export function workdayService() {
   const { mutate: updateWorkday } = useMutation<WorkDay, Error>({
     mutationFn: async (): Promise<WorkDay> => {
       try {
-        const response = await $fetch<WorkdayResponse>(`${apiUrl}/workday`, {
+        const now = new Date().toISOString();
+        const response = await $fetch<WorkdayApiResponse>(`${apiUrl}/workday`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ action: 'toggle' }), // Send 'toggle' action
+          body: JSON.stringify({ action: 'toggle', timestamp: now }),
         });
-        if (!response) {
-          throw new Error(`HTTP error! status: ${response}`);
-        }
         return {
           start_time: response.start_time
             ? new Date(response.start_time)
@@ -64,8 +55,8 @@ export function workdayService() {
         throw error;
       }
     },
-    onSuccess: (updatedWorkdayData) => {
-      refetch();
+    onSuccess: async (updatedWorkdayData) => {
+      await refetch();
       const startTime: Date | null = updatedWorkdayData.start_time;
       const endTime: Date | null = updatedWorkdayData.end_time;
       toast.add({
@@ -77,6 +68,12 @@ export function workdayService() {
     },
     onError: (error) => {
       console.error(`Failed to update workday: ${error.message}.`);
+      toast.add({
+        severity: 'error',
+        summary: "Uh oh",
+        detail: 'Something went wrong when trying to update the workday.',
+        life: 4000,
+      });
     },
   });
 
@@ -86,9 +83,4 @@ export function workdayService() {
 export interface WorkDay {
   start_time: Date | null;
   end_time: Date | null;
-}
-
-interface WorkdayResponse {
-  start_time: string | null;
-  end_time: string | null;
 }

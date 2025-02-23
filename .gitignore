@@ -9,6 +9,9 @@ dist
 # knip outputs
 knip_report.json
 
+#sqlite database
+*.sqlite*
+
 # Node dependencies
 node_modules
 

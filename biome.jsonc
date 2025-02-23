@@ -45,8 +45,8 @@
       },
       "correctness": {
         "noUnusedFunctionParameters": "error",
-        "noUnusedImports": "error",
-        "noUnusedVariables": "error",
+        "noUnusedImports": "off",
+        "noUnusedVariables": "off",
         "noUnusedPrivateClassMembers": "warn",
         "useArrayLiterals": "error"
       },

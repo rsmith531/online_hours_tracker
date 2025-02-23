@@ -1,0 +1,67 @@
+<template>
+  <SpeedDial 
+    v-if="workday"
+  :model="items" 
+  type="linear" 
+  :radius="60"
+  direction="up" 
+  :transitionDelay="80"
+  style="
+    position: fixed; 
+    left: 50%; 
+    bottom: 2rem;
+  " 
+   :tooltipOptions="{ position: 'left' }"
+  >
+    </SpeedDial>
+</template>
+
+<script setup>
+import SpeedDial from 'primevue/speeddial';
+import { computed } from 'vue';
+import { useToast } from 'primevue/usetoast';
+import { workdayService } from '~/helpers/workdayService.ts';
+
+const toast = useToast();
+const { updateWorkday, workday } = workdayService();
+
+const items = computed(() => {
+  return [
+    ...(workday.value?.end_time
+      ? [
+          {
+            label: 'Open Workday',
+            icon: 'pi pi-play',
+            command: async () => {
+              await updateWorkday();
+            },
+          },
+        ]
+      : []),
+    ...(workday.value?.start_time
+      ? [
+          {
+            label: 'Close Workday',
+            icon: 'pi pi-stop',
+            command: () => {
+              updateWorkday();
+            },
+          },
+        ]
+      : []),
+    {
+      label: 'Settings',
+      icon: 'pi pi-cog',
+      command: () => {
+        toast.add({
+          severity: 'info',
+          summary: 'Settings',
+          detail:
+            'Configure your app settings here (will one day have settings)',
+          life: 3000,
+        });
+      },
+    },
+  ];
+});
+</script>

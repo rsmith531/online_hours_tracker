@@ -132,5 +132,18 @@
       "attributePosition": "multiline",
       "bracketSpacing": true
     }
-  }
+  },
+  "overrides": [
+    {
+      "include": ["*.vue"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useConst": "off",
+            "useImportType": "off"
+          }
+        }
+      }
+    }
+  ]
 }

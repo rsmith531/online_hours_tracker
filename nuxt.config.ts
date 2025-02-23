@@ -1,27 +1,35 @@
-import tailwindcss from '@tailwindcss/vite';
+import Aura from '@primeuix/themes/aura';
+import { workdayService } from './helpers/workdayService';
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 // biome-ignore lint/style/noDefaultExport: came from scaffolding
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
-  modules: [
-    //'@nuxtjs/tailwindcss', // '@tailwindcss/postcss'
-    'shadcn-nuxt',
-    'nuxt-tailwindcss4',
+  modules: ['@primevue/nuxt-module',"@hebilicious/vue-query-nuxt"],
+  primevue: {
+    options: {
+      theme: {
+        preset: Aura,
+      },
+    },
+  },
+  components: [
+    {
+      path: '~/components',
+      pathPrefix: false,
+    },
   ],
-  // postcss: {
-  //   plugins: {
-  //     // tailwindcss: {},
-  //     // autoprefixer: {},
-  //     '@tailwindcss/postcss': {},
-  //   },
-  // },
-  shadcn: {
-    prefix: '',
-    componentDir: './components',
+  runtimeConfig: {
+    workday: {
+      start_time: undefined,
+      end_time: undefined,
+
+    }
   },
-  vite: {
-    plugins: [tailwindcss()],
-  },
+  hooks: {
+    'app:created': async () => {
+      await workdayService().refetch();
+    }
+  }
 });

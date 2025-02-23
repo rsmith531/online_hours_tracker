@@ -7,5 +7,14 @@
     },
     "[typescript]": {
       "editor.defaultFormatter": "biomejs.biome"
-    }
+    },
+    "sqltools.useNodeRuntime": true,
+    "sqltools.connections": [
+      {
+        "previewLimit": 50,
+        "driver": "SQLite",
+        "database": "workday_data.sqlite",
+        "name": "workday_data"
+      }
+    ]
   }

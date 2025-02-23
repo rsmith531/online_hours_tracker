@@ -1,3 +1,5 @@
+<!-- NumberDisplay.vue -->
+
 <template>
     <Card
       :style="{

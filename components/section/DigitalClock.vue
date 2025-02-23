@@ -1,3 +1,5 @@
+<!-- DigitalClock.vue -->
+
 <template>
     <div :style="{
       display: 'flex', 

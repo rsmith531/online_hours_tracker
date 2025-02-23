@@ -1,4 +1,4 @@
-<!-- FloatingButton.vue -->
+<!-- ~/components/base/FloatingButton.vue -->
 
 <template>
   <SpeedDial 
@@ -24,9 +24,16 @@ import { computed } from 'vue';
 const toast = useToast();
 const { updateWorkday, workday } = workdayService();
 
+const isWorkdayOpen =
+  workday.value?.start_time !== null && workday.value?.end_time === null;
+const isWorkdayClosed =
+  workday.value?.start_time === null && workday.value?.end_time !== null;
+const isWorkdayNull =
+  workday.value?.start_time === null && workday.value?.end_time === null;
+
 const items = computed(() => {
   return [
-    ...(workday.value?.end_time
+    ...(isWorkdayClosed || isWorkdayNull
       ? [
           {
             label: 'Open Workday',
@@ -37,7 +44,7 @@ const items = computed(() => {
           },
         ]
       : []),
-    ...(workday.value?.start_time
+    ...(isWorkdayOpen
       ? [
           {
             label: 'Close Workday',

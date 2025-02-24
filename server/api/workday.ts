@@ -7,6 +7,7 @@ import {
   createSegment,
   updateSegmentEnd,
   getOpenSession,
+  getLastClosedSession,
   getOpenSegment,
   ActivityType,
 } from '../utils/db';
@@ -20,13 +21,20 @@ export default defineEventHandler(async (event) => {
   try {
     // get the current workday
     if (event.method === 'GET') {
+      let response: WorkdayApiResponse = { start_time: null, end_time: null };
       const openSession = getOpenSession();
-      const response: {
-        start_time: Date | null;
-        end_time: Date | null;
-      } = openSession
-      ? { start_time: openSession.start, end_time: openSession.end }
-      : { start_time: null, end_time: null };
+      if (openSession) {
+        response = { start_time: openSession.start, end_time: openSession.end };
+      } else {
+        const lastClosedSession = getLastClosedSession();
+        if (lastClosedSession) {
+          response = {
+            start_time: lastClosedSession.start,
+            end_time: lastClosedSession.end,
+          };
+        }
+      }
+
       console.log('workday API is sending: ', response);
       return response;
     }
@@ -61,7 +69,7 @@ export default defineEventHandler(async (event) => {
           activity: ActivityType.Working,
         });
         console.log('workday API is sending start_time: ', timestamp);
-        return {start_time: timestamp, end_time: null };
+        return { start_time: timestamp, end_time: null };
       }
     }
 

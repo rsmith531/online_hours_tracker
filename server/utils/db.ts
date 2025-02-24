@@ -106,6 +106,21 @@ export function getOpenSession(): Session | undefined {
   };
 }
 
+export function getLastClosedSession(): Session | undefined {
+  const session = db
+    .prepare('SELECT * FROM sessions WHERE end IS NOT NULL ORDER BY end DESC LIMIT 1')
+    .get() as RawSession;
+  if (!session) {
+    return undefined;
+  }
+  return {
+    ...session,
+    start: new Date(session.start),
+    end: session.end ? new Date(session.end) : null,
+    state: session.state,
+  };
+}
+
 export function getSegmentsForSession(sessionId: number): Segment[] {
   const segments = db
     .prepare('SELECT * FROM segments WHERE session_id = ? ORDER BY start ASC')

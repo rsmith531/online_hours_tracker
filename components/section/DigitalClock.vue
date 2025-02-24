@@ -32,11 +32,15 @@
   </template>
   
 <script setup>
-
 const props = defineProps({
   time: {
     type: Number,
     required: true,
+  },
+  stopwatch: {
+    type: Boolean,
+    required: false,
+    default: true,
   },
 });
 
@@ -46,7 +50,7 @@ const isMounted = ref(false);
 
 onMounted(() => {
   isMounted.value = true;
-  if(props.time !== 0){
+  if (props.stopwatch && props.time !== 0) {
     startInterval();
   }
 });
@@ -55,10 +59,10 @@ watch(
   () => props.time,
   (newTime) => {
     displayTime.value = newTime;
-    if(isMounted.value){
-      if (newTime !== 0) {
+    if (isMounted.value) {
+      if (props.stopwatch && newTime !== 0) {
         startInterval();
-      } else {
+      } else if (!props.stopwatch || newTime === 0) {
         clearIntervalIfSet();
       }
     }
@@ -74,14 +78,14 @@ const startInterval = () => {
   intervalId = setInterval(() => {
     displayTime.value += 1000;
   }, 1000);
-}
+};
 
-const clearIntervalIfSet = () =>{
+const clearIntervalIfSet = () => {
   if (intervalId) {
     clearInterval(intervalId);
     intervalId = null;
   }
-}
+};
 
 const hours = computed(() => Math.floor(displayTime.value / (1000 * 60 * 60)));
 const minutes = computed(() =>

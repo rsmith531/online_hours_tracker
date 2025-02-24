@@ -22,29 +22,30 @@
 import { computed } from 'vue';
 
 const toast = useToast();
-const { updateWorkday, workday } = workdayService();
+const {
+  updateWorkday,
+  workday,
+  isWorkdayClosed,
+  isWorkdayNull,
+  isWorkdayOpen,
+} = workdayService();
 
-const isWorkdayOpen =
-  workday.value?.start_time !== null && workday.value?.end_time === null;
-const isWorkdayClosed =
-  workday.value?.start_time === null && workday.value?.end_time !== null;
-const isWorkdayNull =
-  workday.value?.start_time === null && workday.value?.end_time === null;
+console.log('floating button sees workday as: ', workday.value);
 
 const items = computed(() => {
   return [
-    ...(isWorkdayClosed || isWorkdayNull
+    ...(isWorkdayClosed.value || isWorkdayNull.value
       ? [
           {
             label: 'Open Workday',
             icon: 'pi pi-play',
-            command: async () => {
-              await updateWorkday();
+            command: () => {
+              updateWorkday();
             },
           },
         ]
       : []),
-    ...(isWorkdayOpen
+    ...(isWorkdayOpen.value
       ? [
           {
             label: 'Close Workday',

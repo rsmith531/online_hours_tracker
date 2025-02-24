@@ -9,8 +9,8 @@
   direction="up" 
   :transitionDelay="80"
   style="
-    position: fixed; 
-    left: 50%; 
+    position: absolute; 
+    left: calc(50%-20); 
     bottom: 2rem;
   " 
    :tooltipOptions="{ position: 'left' }"

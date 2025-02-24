@@ -14,11 +14,18 @@
       alignItems: 'center',
     }"
   >
-  <Fieldset :legend="fieldsetLegend"><DigitalClock :time="workdayDuration" :stopwatch="isWorkdayOpen" /></Fieldset>
+
+    <Fieldset :legend="fieldsetLegend">
+      <DigitalClock :time="workdayDuration" :stopwatch="isWorkdayOpen" />
+    </Fieldset>
+    
     <FloatingButton v-if="!isLoading" />
+
     <Toast position="bottom-right" />
+    
+    <VueQueryDevtools />
+
   </div>
-  <VueQueryDevtools />
 </template>
 
 <script setup>
@@ -55,15 +62,19 @@ const fieldsetLegend = computed(() => {
   return 'No workday data';
 });
 const workdayDuration = computed(() => {
-  if (!workday.value) { return 0;}
+  if (!workday.value) {
+    return 0;
+  }
   if (isWorkdayOpen.value) {
     const now = new Date();
     const startTime = new Date(workday.value.start_time);
-    console.log('calculated start time: ', now - startTime)
+    console.log('calculated start time: ', now - startTime);
     return now - startTime;
   }
   if (isWorkdayClosed.value) {
-    return workday?.value.end_time?.getTime() - workday?.value.start_time?.getTime();
+    return (
+      workday?.value.end_time?.getTime() - workday?.value.start_time?.getTime()
+    );
   }
   return 0;
 });

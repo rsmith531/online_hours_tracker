@@ -4,7 +4,9 @@
     <div :style="{
       display: 'flex', 
       flexDirection: 'row',
-      gap: '1rem'
+      gap: '0.5rem',
+      maxWidth: '90vw',
+      overflow: 'hidden'
       }">
     <NumberDisplay :number="hoursTens" />
     <NumberDisplay :number="hoursOnes" />
@@ -12,6 +14,8 @@
       :style="{
         height: '8rem',
         fontSize: '7rem',
+        width: 'fit-content',
+        maxWidth: 'calc(100%/8)',
       }"
     >
       :
@@ -22,6 +26,8 @@
       :style="{
         height: '8rem',
         fontSize: '7rem',
+        width: 'fit-content',
+        maxWidth: 'calc(100%/8)',
       }"
     >
       :

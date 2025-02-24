@@ -23,7 +23,7 @@ export default defineNuxtConfig({
   ],
   runtimeConfig: {
     public: {
-      apiUrl: 'http://localhost:3000/api',
+      apiUrl: 'https://192.168.1.101:3000/api',
     },
   },
   css: ['primeicons/primeicons.css'],

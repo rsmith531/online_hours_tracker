@@ -12,6 +12,11 @@ knip_report.json
 #sqlite database
 *.sqlite*
 
+# TLS certificates
+*ca.*
+*cert.*
+*.pem
+
 # Node dependencies
 node_modules
 

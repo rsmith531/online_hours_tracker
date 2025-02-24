@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev --host",
+    "dev": "nuxt dev --host --https --ssl-cert ",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
@@ -28,6 +28,7 @@
     "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22.13.5",
     "knip": "^5.44.4",
+    "mkcert": "^3.2.0",
     "typescript": "^5.7.3"
   }
 }

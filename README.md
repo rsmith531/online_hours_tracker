@@ -22,7 +22,13 @@ bun install
 
 ## Development Server
 
-Start the development server on `http://localhost:3000`:
+Create the required TLS certificates to run as HTTPS:
+
+1. `npx mkcert create-ca`
+
+1. `npx mkcert create-cert --key localhost-key.pem --cert localhost.pem --domains ["localhost", "192.168.1.101"]`
+
+Start the development server on `http://localhost:3000` & `https://192.168.1.101:3000`:
 
 ```bash
 # npm

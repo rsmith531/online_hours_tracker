@@ -5,33 +5,44 @@
       display: 'flex', 
       flexDirection: 'row',
       gap: '0.5rem',
-      maxWidth: '90vw',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      alignContent: 'center',
+      justifyContent: 'center'
       }">
     <NumberDisplay :number="hoursTens" />
     <NumberDisplay :number="hoursOnes" />
-    <div
+    <p
       :style="{
-        height: '8rem',
-        fontSize: '7rem',
         width: 'fit-content',
         maxWidth: 'calc(100%/8)',
+        display: 'flex',
+        alignItems: 'center'
       }"
+      class="
+        text-2xl sm:text-8xl 
+        h-[4rem] sm:h-[8rem] 
+        p-[0rem] sm:p-[1rem]
+      "
     >
       :
-    </div>
+    </p>
     <NumberDisplay :number="minutesTens" />
     <NumberDisplay :number="minutesOnes" />
-    <div
+    <p
       :style="{
-        height: '8rem',
-        fontSize: '7rem',
         width: 'fit-content',
         maxWidth: 'calc(100%/8)',
+        display: 'flex',
+        alignItems: 'center'
       }"
+      class="
+        text-2xl sm:text-8xl 
+        h-[4rem] sm:h-[8rem] 
+        p-[0rem] sm:p-[1rem]
+      "
     >
       :
-    </div>
+    </p>
     <NumberDisplay :number="secondsTens" />
     <NumberDisplay :number="secondsOnes" />
 </div>
@@ -118,4 +129,11 @@ const secondsOnes = computed(() =>
   displayTime.value === 0 ? '-' : seconds.value % 10
 );
 </script>
-  
+
+<style scoped>
+div {
+  font-family: Doto, monospace;
+  font-weight: 700;
+}
+
+</style>

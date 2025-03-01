@@ -7,7 +7,12 @@ import Aura from '@primevue/themes/aura';
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
-  modules: ['@primevue/nuxt-module'],
+  modules: [
+    '@primevue/nuxt-module',
+    '@nuxt/fonts',
+    'nuxt-security',
+    '@nuxtjs/tailwindcss',
+  ],
   primevue: {
     options: {
       theme: {
@@ -23,8 +28,20 @@ export default defineNuxtConfig({
   ],
   runtimeConfig: {
     public: {
-      apiUrl: 'https://192.168.1.101:3000/api',
+      apiUrl: '/api',
     },
   },
   css: ['primeicons/primeicons.css'],
+  fonts: {
+    defaults: {
+      fallbacks: {
+        'sans-serif': ['Tahoma'],
+        'serif': ['Georgia'],
+        'monospace': ['Courier New']
+      }
+    },
+    families: [
+      {name: 'Doto', weights: [400, 800, 900]}
+    ]
+  },
 });

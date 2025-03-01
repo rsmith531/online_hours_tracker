@@ -17,6 +17,9 @@ knip_report.json
 *cert.*
 *.pem
 
+# font data
+.data
+
 # Node dependencies
 node_modules
 

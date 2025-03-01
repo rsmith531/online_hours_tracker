@@ -5,7 +5,7 @@
     :style="{
       border: `2px solid ${borderColor}`,
       borderRadius: '1rem',
-      transition: 'all 0.5s ease',
+      transition: 'all 1.5s ease',
       boxShadow: `inset 0 0 2rem ${borderColor}`,
       display: 'flex',
       flexDirection: 'column',
@@ -15,7 +15,11 @@
     }"
   >
 
-    <Fieldset :legend="fieldsetLegend">
+    <Fieldset>
+      <template #legend>
+        <p class="
+        text-2xl sm:text-4xl">{{ fieldsetLegend }}</p>
+      </template>
       <DigitalClock :time="workdayDuration" :stopwatch="isWorkdayOpen" />
     </Fieldset>
     
@@ -50,8 +54,8 @@ console.log('app.vue sees workday as: ', workday.value);
 console.log('    and isLoading as: ', isLoading.value);
 
 const borderColor = computed(() => {
-  if (isLoading.value) return 'blue';
-  if (isWorkdayClosed.value || isWorkdayNull.value) return 'red';
+  if (isLoading.value || isWorkdayNull.value) return 'blue';
+  if (isWorkdayClosed.value) return 'red';
   if (isWorkdayOpen.value) return 'green';
   return 'grey';
 });

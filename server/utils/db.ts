@@ -2,6 +2,7 @@
 
 // TODO: someday, transition to using an ORM such as prisma or drizzle
 import Database from 'better-sqlite3';
+import type { ActivityType } from '~/utils/workdayService';
 const db = new Database('workday_data.sqlite');
 // https://github.com/WiseLibs/better-sqlite3/blob/master/docs/performance.md
 db.pragma('journal_mode = WAL');
@@ -22,7 +23,7 @@ export function initializeDatabase(): void {
         end TEXT,
         activity TEXT NOT NULL,
         FOREIGN KEY (session_id) REFERENCES sessions(id),
-        CHECK (activity IN ('Working', 'OnBreak'))
+        CHECK (activity IN ('working', 'on break'))
       );
     `);
 }
@@ -42,6 +43,7 @@ export function updateSessionEnd(
 }
 
 export function createSegment(segment: Omit<Segment, 'id'>): number {
+  console.log('createSegment')
   const stmt = db.prepare(
     'INSERT INTO segments (session_id, start, end, activity) VALUES (?, ?, ?, ?)'
   );
@@ -58,6 +60,7 @@ export function updateSegmentEnd(
   segmentId: number,
   end: Date = new Date()
 ): void {
+  console.log('updateSegmentEnd')
   const stmt = db.prepare('UPDATE segments SET end = ? WHERE id = ?');
   stmt.run(end.toISOString(), segmentId);
 }
@@ -73,6 +76,7 @@ export function getSessions(): Session[] {
 }
 
 export function getOpenSegment(sessionId: number): Segment | undefined {
+  console.log('getOpenSegment')
   const segment = db
     .prepare('SELECT * FROM segments WHERE session_id = ? AND end IS NULL')
     .get(sessionId) as RawSegment;
@@ -122,6 +126,7 @@ export function getLastClosedSession(): Session | undefined {
 }
 
 export function getSegmentsForSession(sessionId: number): Segment[] {
+  console.log('getSegmentsForSession')
   const segments = db
     .prepare('SELECT * FROM segments WHERE session_id = ? ORDER BY start ASC')
     .all(sessionId) as RawSegment[];
@@ -164,11 +169,6 @@ export function getCurrentWeek(): { startDate: Date; endDate: Date } {
 enum SessionState {
   Open = 'open',
   Closed = 'closed',
-}
-
-export enum ActivityType {
-  Working = 'Working',
-  OnBreak = 'OnBreak',
 }
 
 interface Session {

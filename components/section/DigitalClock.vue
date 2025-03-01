@@ -1,7 +1,7 @@
 <!-- DigitalClock.vue -->
 
 <template>
-    <div :style="{
+  <div :style="{
       display: 'flex', 
       flexDirection: 'row',
       gap: '0.5rem',
@@ -45,8 +45,8 @@
     </p>
     <NumberDisplay :number="secondsTens" />
     <NumberDisplay :number="secondsOnes" />
-</div>
-  </template>
+  </div>
+</template>
   
 <script setup>
 const props = defineProps({

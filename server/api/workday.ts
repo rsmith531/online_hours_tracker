@@ -9,67 +9,197 @@ import {
   getOpenSession,
   getLastClosedSession,
   getOpenSegment,
-  ActivityType,
 } from '../utils/db';
+import { ActivityType } from '~/utils/workdayService';
 
 export interface WorkdayApiResponse {
   start_time: Date | null;
   end_time: Date | null;
+  segments:
+    | {
+        start_time: Date | null;
+        end_time: Date | null;
+        activity: ActivityType;
+      }[]
+    | undefined;
 }
 
 export default defineEventHandler(async (event) => {
   try {
     // get the current workday
     if (event.method === 'GET') {
-      let response: WorkdayApiResponse = { start_time: null, end_time: null };
+      console.log('API GET method running...');
+      let response: WorkdayApiResponse = {
+        start_time: null,
+        end_time: null,
+        segments: undefined,
+      };
       const openSession = getOpenSession();
       if (openSession) {
-        response = { start_time: openSession.start, end_time: openSession.end };
+        console.log('API GET found open session');
+        const segments = getSegmentsForSession(openSession.id);
+        response = {
+          start_time: openSession.start,
+          end_time: openSession.end,
+          segments: segments.map((segment) => {
+            return {
+              start_time: segment.start,
+              end_time: segment.end,
+              activity: segment.activity,
+            };
+          }),
+        };
       } else {
+        console.log('API GET found no open session');
         const lastClosedSession = getLastClosedSession();
         if (lastClosedSession) {
+          const sessionSegments = getSegmentsForSession(lastClosedSession.id);
           response = {
             start_time: lastClosedSession.start,
             end_time: lastClosedSession.end,
+            segments: sessionSegments.map((segment) => {
+              return {
+                start_time: segment.start,
+                end_time: segment.end,
+                activity: segment.activity,
+              };
+            }),
           };
         }
       }
 
-      console.log('workday API is sending: ', response);
+      console.log('workday API is sending GET workday response: ', response);
       return response;
     }
 
-    // open or close the workday
     if (event.method === 'POST') {
+      console.log('API POST method running...');
       const body = await readBody(event);
-      if (body && body.action === 'toggle') {
+
+      if (body) {
+        let response: WorkdayApiResponse;
+        // use provided timestamp, or the servers.
         const timestamp = body.timestamp
           ? new Date(body.timestamp)
-          : new Date(); // use provided timestamp, or the servers.
-
+          : new Date();
         const openSession = getOpenSession();
+        switch (body.action) {
+          // open or close the workday
+          case 'toggle': {
+            if (openSession) {
+              // Close the open session
+              const openSegment = getOpenSegment(openSession.id);
+              if (openSegment) {
+                updateSegmentEnd(openSegment.id, timestamp);
+              }
+              updateSessionEnd(openSession.id, timestamp);
+              response = {
+                start_time: openSession.start,
+                end_time: timestamp,
+                segments: getSegmentsForSession(openSession.id).map(
+                  (segment) => {
+                    return {
+                      start_time: segment.start,
+                      end_time: segment.end,
+                      activity: segment.activity,
+                    };
+                  }
+                ),
+              };
+            } else {
+              // Open a new session
+              const sessionId = createSession(timestamp);
+              createSegment({
+                session_id: sessionId,
+                start: timestamp,
+                end: null,
+                activity: ActivityType.Working,
+              });
+              response = {
+                start_time: timestamp,
+                end_time: null,
+                segments: [
+                  {
+                    start_time: timestamp,
+                    end_time: null,
+                    activity: ActivityType.Working,
+                  },
+                ],
+              };
+            }
 
-        if (openSession) {
-          // Close the open session
-          const openSegment = getOpenSegment(openSession.id);
-          if (openSegment) {
-            updateSegmentEnd(openSegment.id, timestamp);
+            console.log(
+              'workday API is sending POST toggle response: ',
+              response
+            );
+            return response;
           }
-          updateSessionEnd(openSession.id, timestamp);
-          console.log('workday API is sending end_time: ', timestamp);
-          return { start_time: null, end_time: timestamp };
-        }
 
-        // else: Open a new session
-        const sessionId = createSession(timestamp);
-        createSegment({
-          session_id: sessionId,
-          start: timestamp,
-          end: null,
-          activity: ActivityType.Working,
-        });
-        console.log('workday API is sending start_time: ', timestamp);
-        return { start_time: timestamp, end_time: null };
+          // pause or unpause the workday
+          case 'pause': {
+            if (openSession) {
+              const openSegment = getOpenSegment(openSession.id);
+              if (
+                openSegment &&
+                openSegment.activity === ActivityType.Working
+              ) {
+                // close the Working segment and open an OnBreak segment
+                updateSegmentEnd(openSegment.id, timestamp);
+                createSegment({
+                  session_id: openSession.id,
+                  start: timestamp,
+                  end: null,
+                  activity: ActivityType.OnBreak,
+                });
+              } else if (
+                openSegment &&
+                openSegment.activity === ActivityType.OnBreak
+              ) {
+                // close the OnBreak segment and open a Working segment
+                updateSegmentEnd(openSegment.id, timestamp);
+                createSegment({
+                  session_id: openSession.id,
+                  start: timestamp,
+                  end: null,
+                  activity: ActivityType.Working,
+                });
+              } else {
+                return createError({
+                  statusCode: 513,
+                  statusMessage:
+                    'An unexpected error occurred while toggling the paused state of your workday.',
+                });
+              }
+              response = {
+                start_time: openSession.start,
+                end_time: openSession.end,
+                segments: getSegmentsForSession(openSession.id).map(
+                  (segment) => {
+                    return {
+                      start_time: segment.start,
+                      end_time: segment.end,
+                      activity: segment.activity,
+                    };
+                  }
+                ),
+              };
+              console.log(
+                'workday API is sending POST pause response: ',
+                response
+              );
+              return response;
+            }
+            return createError({
+              statusCode: 512,
+              statusMessage: 'Cannot pause without an open session',
+            });
+          }
+          default:
+            return createError({
+              statusCode: 400,
+              statusMessage: 'Invalid request',
+            });
+        }
       }
     }
 
@@ -81,7 +211,7 @@ export default defineEventHandler(async (event) => {
     console.error('Error in workday API:', error);
     return createError({
       statusCode: 500,
-      statusMessage: 'Internal Server Error',
+      statusMessage: 'Internal Server Error at the workday API',
     });
   }
 });

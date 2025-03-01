@@ -24,10 +24,12 @@ import { computed } from 'vue';
 const toast = useToast();
 const {
   updateWorkday,
+  pauseWorkday,
   workday,
   isWorkdayClosed,
   isWorkdayNull,
   isWorkdayOpen,
+  isWorkdayPaused,
 } = workdayService();
 
 console.log('floating button sees workday as: ', workday.value);
@@ -52,6 +54,13 @@ const items = computed(() => {
             icon: 'pi pi-stop',
             command: () => {
               updateWorkday();
+            },
+          },
+          {
+            label: isWorkdayPaused.value ? 'Unpause Workday' : 'Pause Workday',
+            icon: isWorkdayPaused.value ? 'pi pi-play' : 'pi pi-pause',
+            command: () => {
+              pauseWorkday();
             },
           },
         ]

@@ -28,7 +28,6 @@ export default defineEventHandler(async (event) => {
   try {
     // get the current workday
     if (event.method === 'GET') {
-      console.log('API GET method running...');
       let response: WorkdayApiResponse = {
         start_time: null,
         end_time: null,
@@ -36,7 +35,6 @@ export default defineEventHandler(async (event) => {
       };
       const openSession = getOpenSession();
       if (openSession) {
-        console.log('API GET found open session');
         const segments = getSegmentsForSession(openSession.id);
         response = {
           start_time: openSession.start,
@@ -50,7 +48,6 @@ export default defineEventHandler(async (event) => {
           }),
         };
       } else {
-        console.log('API GET found no open session');
         const lastClosedSession = getLastClosedSession();
         if (lastClosedSession) {
           const sessionSegments = getSegmentsForSession(lastClosedSession.id);
@@ -68,12 +65,10 @@ export default defineEventHandler(async (event) => {
         }
       }
 
-      console.log('workday API is sending GET workday response: ', response);
       return response;
     }
 
     if (event.method === 'POST') {
-      console.log('API POST method running...');
       const body = await readBody(event);
 
       if (body) {
@@ -128,10 +123,6 @@ export default defineEventHandler(async (event) => {
               };
             }
 
-            console.log(
-              'workday API is sending POST toggle response: ',
-              response
-            );
             return response;
           }
 
@@ -183,10 +174,7 @@ export default defineEventHandler(async (event) => {
                   }
                 ),
               };
-              console.log(
-                'workday API is sending POST pause response: ',
-                response
-              );
+              
               return response;
             }
             return createError({

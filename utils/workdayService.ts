@@ -25,7 +25,6 @@ export function workdayService() {
         const response = await useFetch<WorkdayApiResponse>(
           `${apiUrl}/workday`
         );
-        console.log('workday service sees workday as: ', response.data.value);
         return {
           start_time: response.data.value?.start_time
             ? new Date(response.data.value.start_time)
@@ -82,7 +81,6 @@ export function workdayService() {
       queryClient.invalidateQueries({ queryKey: ['workday_service'] });
       const startTime: Date | null = updatedWorkdayData.start_time;
       const endTime: Date | null = updatedWorkdayData.end_time;
-      console.log('toggle workday onSuccess: ', startTime, endTime);
       toast.add({
         severity: endTime ? 'error' : 'success',
         summary: `${endTime ? 'Closed' : 'Opened'} workday at ${
@@ -141,12 +139,10 @@ export function workdayService() {
       }
     },
     onSuccess: async (updatedWorkdayData) => {
-      console.log('workdayService successfully paused: ', updatedWorkdayData);
       queryClient.invalidateQueries({ queryKey: ['workday_service'] });
       const segment = updatedWorkdayData.segments?.at(-1);
       const startTime = segment?.start_time && new Date(segment.start_time);
       const activity = segment?.activity;
-      console.log('pause onSuccess got: ', segment, startTime, activity);
       toast.add({
         severity: activity === ActivityType.Working ? 'success' : 'warn',
         summary: `${activity === ActivityType.Working ? 'Unpaused' : 'Paused '} workday at ${startTime ? startTime.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : 'error'}`,
@@ -169,22 +165,18 @@ export function workdayService() {
   });
 
   const isWorkdayOpen = computed(() => {
-    console.log('isWorkdayOpen: ', workday.value);
     return (workday.value?.start_time !== null &&
       workday.value?.end_time === null) as boolean;
   });
 
   const isWorkdayClosed = computed(() => {
-    console.log('isWorkdayClosed: ', workday.value);
     return (workday.value?.start_time !== null &&
       workday.value?.end_time !== null) as boolean;
   });
 
   const isWorkdayPaused = computed(() => {
-    console.log('isWorkdayPaused: ', workday.value);
     if (workday.value?.segments) {
       const lastSegment = workday.value.segments.at(-1);
-      console.log('  found a last segment: ', lastSegment);
       if (lastSegment) {
         // Check if lastSegment is defined
         return (lastSegment.activity !== ActivityType.Working) as boolean;
@@ -194,7 +186,6 @@ export function workdayService() {
   });
 
   const isWorkdayNull = computed(() => {
-    console.log('isWorkdayNull: ', workday.value);
     return (workday.value?.start_time === null &&
       workday.value?.end_time === null) as boolean;
   });

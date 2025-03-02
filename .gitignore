@@ -6,6 +6,9 @@
 .cache
 dist
 
+# private .env file
+.env
+
 # knip outputs
 knip_report.json
 

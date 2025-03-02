@@ -1,21 +1,12 @@
 <!-- ~/components/base/FloatingButton.vue -->
 
 <template>
-  <SpeedDial 
-    v-if="workday"
-  :model="items" 
-  type="linear" 
-  :radius="60"
-  direction="up" 
-  :transitionDelay="80"
-  style="
+  <SpeedDial v-if="workday" :model="items" type="linear" :radius="60" direction="up" :transitionDelay="80" style="
     position: absolute; 
     left: calc(50%-20); 
     bottom: 2rem;
-  " 
-   :tooltipOptions="{ position: 'left' }"
-  >
-    </SpeedDial>
+  " :tooltipOptions="{ position: 'left' }">
+  </SpeedDial>
 </template>
 
 <script setup>
@@ -32,50 +23,46 @@ const {
   isWorkdayPaused,
 } = workdayService();
 
-console.log('floating button sees workday as: ', workday.value);
-
 const items = computed(() => {
   return [
     ...(isWorkdayClosed.value || isWorkdayNull.value
       ? [
-          {
-            label: 'Open Workday',
-            icon: 'pi pi-play',
-            command: () => {
-              updateWorkday();
-            },
+        {
+          label: 'Open Workday',
+          icon: 'pi pi-play',
+          command: () => {
+            updateWorkday();
           },
-        ]
+        },
+      ]
       : []),
     ...(isWorkdayOpen.value
       ? [
-          {
-            label: 'Close Workday',
-            icon: 'pi pi-stop',
-            command: () => {
-              updateWorkday();
-            },
+        {
+          label: 'Close Workday',
+          icon: 'pi pi-stop',
+          command: () => {
+            updateWorkday();
           },
-          {
-            label: isWorkdayPaused.value ? 'Unpause Workday' : 'Pause Workday',
-            icon: isWorkdayPaused.value ? 'pi pi-play' : 'pi pi-pause',
-            command: () => {
-              pauseWorkday();
-            },
+        },
+        {
+          label: isWorkdayPaused.value ? 'Unpause Workday' : 'Pause Workday',
+          icon: isWorkdayPaused.value ? 'pi pi-play' : 'pi pi-pause',
+          command: () => {
+            pauseWorkday();
           },
-        ]
+        },
+      ]
       : []),
     {
       label: 'Settings',
       icon: 'pi pi-cog',
       command: () => {
+        toast.removeGroup('settings-toast');
         toast.add({
-          severity: 'info',
-          summary: 'Settings',
-          detail:
-            'Configure your app settings here (will one day have settings)',
-          life: 3000,
-        });
+          summary: 'Welcome to the site!',
+          group: 'settings-toast',
+        })
       },
     },
   ];

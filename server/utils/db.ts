@@ -43,7 +43,6 @@ export function updateSessionEnd(
 }
 
 export function createSegment(segment: Omit<Segment, 'id'>): number {
-  console.log('createSegment')
   const stmt = db.prepare(
     'INSERT INTO segments (session_id, start, end, activity) VALUES (?, ?, ?, ?)'
   );
@@ -60,7 +59,6 @@ export function updateSegmentEnd(
   segmentId: number,
   end: Date = new Date()
 ): void {
-  console.log('updateSegmentEnd')
   const stmt = db.prepare('UPDATE segments SET end = ? WHERE id = ?');
   stmt.run(end.toISOString(), segmentId);
 }
@@ -76,7 +74,6 @@ export function getSessions(): Session[] {
 }
 
 export function getOpenSegment(sessionId: number): Segment | undefined {
-  console.log('getOpenSegment')
   const segment = db
     .prepare('SELECT * FROM segments WHERE session_id = ? AND end IS NULL')
     .get(sessionId) as RawSegment;
@@ -126,7 +123,6 @@ export function getLastClosedSession(): Session | undefined {
 }
 
 export function getSegmentsForSession(sessionId: number): Segment[] {
-  console.log('getSegmentsForSession')
   const segments = db
     .prepare('SELECT * FROM segments WHERE session_id = ? ORDER BY start ASC')
     .all(sessionId) as RawSegment[];

@@ -196,10 +196,10 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Invalid request',
     });
   } catch (error) {
-    console.error('Error in workday API:', error);
+    console.error('Workday API:', error);
     return createError({
       statusCode: 500,
-      statusMessage: 'Internal Server Error at the workday API',
+      statusMessage: 'Internal Server Error',
     });
   }
 });

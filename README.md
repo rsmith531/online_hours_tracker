@@ -79,3 +79,9 @@ bun run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+### Resources
+
+- [How to use Primevue Toast outside of a component](https://stackoverflow.com/questions/72425297/vue-warn-inject-can-only-be-used-inside-setup-or-functional-components)
+- [PushSubscription](https://developer.mozilla.org/en-US/docs/Web/API/PushSubscription)
+- [How to make a push notification service worker](https://javascript.plainenglish.io/push-notifications-using-a-service-worker-5f2e371774e)

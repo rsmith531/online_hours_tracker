@@ -30,7 +30,7 @@
   "organizeImports": { "enabled": true },
   "linter": {
     "enabled": true,
-    // TODO: rsmith - add no relative import rule with Biome v2.0.0 custom rules (https://biomejs.dev/blog/roadmap-2025/#%EF%B8%8F-biome-20)
+    // TODO: add no relative import rule with Biome v2.0.0 custom rules (https://biomejs.dev/blog/roadmap-2025/#%EF%B8%8F-biome-20)
     "rules": {
       "recommended": true,
       "performance": {

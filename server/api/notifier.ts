@@ -23,8 +23,10 @@ export default defineEventHandler(async (event) => {
     process.env.VAPID_PRIVATE_KEY
   ) {
     webpush.setVapidDetails(
-      // TODO: get this URL from a reliable source of information about where the server is running
-      'https://localhost:3000',
+      // check if origin is an https, if not or if it does not exist, use a default
+      origin.slice(0, 5).toLowerCase() === 'https'
+        ? (event.node.req.headers.origin ?? 'https://localhost:3000')
+        : 'https://localhost:3000',
       process.env.VITE_PUBLIC_VAPID_PUBLIC_KEY,
       process.env.VAPID_PRIVATE_KEY
     );
@@ -57,9 +59,10 @@ export default defineEventHandler(async (event) => {
       }
       case 'POST': {
         // create-subscription: add the new subscriber to the subscribers
-      const intervalMs = Number(requestBody.interval) * 1000;
-      const currentWorkingTime = getCurrentWorkingTime();
-      const nextNotificationTime = Math.ceil(currentWorkingTime / intervalMs) * intervalMs;
+        const intervalMs = Number(requestBody.interval) * 1000;
+        const currentWorkingTime = getCurrentWorkingTime();
+        const nextNotificationTime =
+          Math.ceil(currentWorkingTime / intervalMs) * intervalMs;
         subscribers.push({
           subscription: requestBody.subscription,
           interval: Number(requestBody.interval),

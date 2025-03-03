@@ -28,6 +28,9 @@ const handleNotificationsChange = async (notificationsOn: boolean) => {
         if (!('PushManager' in window)) {
           throw new Error('This browser does not support push notifications.');
         }
+        console.log(
+          '[notificationsService] browser compatibility check PASSED'
+        );
 
         // next, check if notifications permissions have been granted
         switch (Notification.permission) {
@@ -54,11 +57,17 @@ const handleNotificationsChange = async (notificationsOn: boolean) => {
             );
           }
         }
+        console.log('[notificationsService] browser notifications ENABLED');
 
         // register the service worker from serviceWorker.ts (if previously registered, it will update the registration)
         serviceWorkerRegistration =
           await navigator.serviceWorker.register('/serviceWorker.ts');
+        console.log('[notificationsService] service worker REGISTERED');
       } catch (error) {
+        console.error(
+          'received error when registering service worker: ',
+          error
+        );
         // set notificationsOn to false
         siteSettings.setNotificationsOn(false);
 
@@ -74,6 +83,11 @@ const handleNotificationsChange = async (notificationsOn: boolean) => {
           const requestBody: NotifierApiRequest = {
             subscription: subscription.toJSON(),
           };
+
+          console.log(
+            '[notificationsService]: sending requestBody to /api/notifier via DELETE: ',
+            requestBody
+          );
           await fetch('/api/notifier', {
             method: 'DELETE',
             headers: {
@@ -133,6 +147,10 @@ const handleNotificationIntervalChange = async (
             interval: notificationInterval,
           };
 
+          console.log(
+            '[notificationsService]: sending requestBody to /api/notifier via PATCH: ',
+            requestBody
+          );
           await fetch('/api/notifier', {
             method: 'PATCH',
             headers: {

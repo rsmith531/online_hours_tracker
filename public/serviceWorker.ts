@@ -1,10 +1,11 @@
-// ~/utils/serviceWorker.ts
+// ~/public/serviceWorker.ts
 
 declare const self: ServiceWorkerGlobalScope;
 import type { NotifierApiRequest } from 'server/api/notifier';
 
 // when the service worker is registered, the activate event is triggered
 self.addEventListener('activate', async () => {
+  console.log('[serviceWorker] adding event listener for activate... ');
   const subscription = await self.registration.pushManager.subscribe({
     userVisibleOnly: true,
     // will this file have access to the public key in the environment variable when it is registered as a service worker?
@@ -16,11 +17,14 @@ self.addEventListener('activate', async () => {
   // cheat and pick it up directly
   // TODO: more elegantly get the interval value
   const requestBody: NotifierApiRequest = {
+    // @ts-expect-error I don't really know if this will be a problem or not
     subscription: subscription.toJSON(),
     interval: Number.parseInt(
       localStorage.getItem('notificationInterval') ?? '60'
     ),
   };
+
+  console.log('[serviceWorker]: sending requestBody to /api/notifier via POST: ', requestBody);
 
   // send a POST request to /api/notifier to create-subscription
   await fetch('/api/notifier', {
@@ -31,6 +35,7 @@ self.addEventListener('activate', async () => {
 });
 
 self.addEventListener('push', (e) => {
+  console.log('[serviceWorker] adding event listener for push... ');
   // in the push event, it should get the event body text and display it as a push notification via the push API
   // clicking the notification should take the user to the website
   self.registration.showNotification('Wohoo!!', { body: e.data?.text() });

@@ -18,7 +18,6 @@ self.addEventListener('activate', async () => {
   console.log('[serviceWorker] adding event listener for activate... ');
   const subscription = await self.registration.pushManager.subscribe({
     userVisibleOnly: true,
-    // will this file have access to the public key in the environment variable when it is registered as a service worker?
     applicationServerKey: urlBase64ToUint8Array(
       'BLuvMIgFaIErYWv0eQPV_xrZflq4ZJfn5QBGmTE6_FiPnoDokw9NC6DXcUZYsmvHazLHbPc-0vDreGFXQ4hgFp8'
     ), // populated at build time by vite pre-build hook
@@ -54,7 +53,7 @@ self.addEventListener('push', (e) => {
   console.log('[serviceWorker] adding event listener for push... ');
   // in the push event, it should get the event body text and display it as a push notification via the push API
   // clicking the notification should take the user to the website
-  self.registration.showNotification('Wohoo!!', { body: e.data?.text() });
+  self.registration.showNotification('Workday reminder', { body: e.data?.text() });
 });
 
 // a helper function to make the VAPID public key readable by the Push API

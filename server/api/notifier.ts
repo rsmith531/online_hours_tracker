@@ -2,13 +2,18 @@
 
 import type { PushSubscription } from 'web-push';
 import webpush from 'web-push';
+import { ActivityType } from '~/utils/workdayService';
 
 // the list of subscribers to the push notifications
-const subscribers: { subscription: PushSubscription; interval: number }[] = [];
+const subscribers: {
+  subscription: PushSubscription;
+  interval: number; // in seconds
+  targetNotificationTime: number; // elapsed working time to send next notification in ms
+}[] = [];
 
 export type NotifierApiRequest = {
   subscription: PushSubscription;
-  interval?: number;
+  interval?: number; // in seconds
 };
 
 export default defineEventHandler(async (event) => {
@@ -41,18 +46,24 @@ export default defineEventHandler(async (event) => {
     }
     switch (event.method) {
       case 'GET': {
-        // TODO
-        // send-notification: will need to listen to the workday API to know the current working time
-        // at the intervals set by each subscriber, push a notification to them
-        console.warn('Notifier API: GET not implemented');
-        webpush.sendNotification(subscribers[0].subscription, 'Hello world');
+        // TODO: lock down the GET method by requiring an API key in the headers
+
+        // send-notification: send a message to ALL subscribers
+        subscribers.map((subscriber) => {
+          webpush.sendNotification(subscriber.subscription, 'Hello world');
+        });
+
         return;
       }
       case 'POST': {
         // create-subscription: add the new subscriber to the subscribers
+      const intervalMs = Number(requestBody.interval) * 1000;
+      const currentWorkingTime = getCurrentWorkingTime();
+      const nextNotificationTime = Math.ceil(currentWorkingTime / intervalMs) * intervalMs;
         subscribers.push({
           subscription: requestBody.subscription,
           interval: Number(requestBody.interval),
+          targetNotificationTime: nextNotificationTime,
         });
         console.log('[api/notifier] subscribers is now ', subscribers);
         return;
@@ -62,8 +73,10 @@ export default defineEventHandler(async (event) => {
         // update-subscription: look up the subscriber and change the interval to the new interval
         if (requestBody.interval && requestBody.subscription) {
           const subscriber = subscribers.findIndex((subscriber) => {
-            return subscriber.subscription.endpoint ===
-              requestBody.subscription.endpoint;
+            return (
+              subscriber.subscription.endpoint ===
+              requestBody.subscription.endpoint
+            );
           });
 
           if (subscriber !== -1) {
@@ -120,3 +133,70 @@ export default defineEventHandler(async (event) => {
     });
   }
 });
+
+async function checkAndSendNotifications() {
+  const totalWorkingDuration = getCurrentWorkingTime();
+
+  for (const subscriber of subscribers) {
+    if (
+      // totalWorkingDuration - subscriber.lastNotificationTime >=
+      // subscriber.interval * 1000
+      totalWorkingDuration >= subscriber.targetNotificationTime
+    ) {
+      try {
+        await webpush.sendNotification(
+          subscriber.subscription,
+          `You have been working for ${formatDuration(totalWorkingDuration)}`
+        );
+        // subscriber.lastNotificationTime = totalWorkingDuration;
+        // Calculate the next target notification time
+        subscriber.targetNotificationTime += subscriber.interval * 1000;
+      } catch (error) {
+        console.error('Failed to send notification:', error);
+      }
+    }
+  }
+}
+
+// TODO: consolidate this function into the workdayService
+function getCurrentWorkingTime(): number {
+  const now = new Date();
+  let totalWorkingDuration = 0;
+
+  // TODO: get the database data from API instead
+  // Get all segments for current session
+  const openSession = getOpenSession();
+  const segments = openSession ? getSegmentsForSession(openSession.id) : [];
+
+  for (const segment of segments) {
+    if (segment.activity === ActivityType.Working) {
+      const startTime = new Date(segment.start);
+      const endTime = segment.end ? new Date(segment.end) : now;
+
+      const segmentDuration = endTime.getTime() - startTime.getTime();
+      totalWorkingDuration += segmentDuration;
+    }
+  }
+
+  return totalWorkingDuration;
+}
+
+function formatDuration(totalWorkingDuration: number): string {
+  const totalSeconds = Math.floor(totalWorkingDuration / 1000); // Get whole number seconds from ms
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  const formattedHours = String(hours).padStart(2, '0');
+  const formattedMinutes = String(minutes).padStart(2, '0');
+  const formattedSeconds = String(seconds).padStart(2, '0');
+
+  return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+}
+
+// Check every second for accumulated working time
+const notificationCheckInterval = setInterval(checkAndSendNotifications, 1000);
+
+// Cleanup on exit
+process.on('exit', () => clearInterval(notificationCheckInterval));

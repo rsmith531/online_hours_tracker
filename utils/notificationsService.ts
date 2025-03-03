@@ -98,7 +98,7 @@ const handleNotificationsChange = async (notificationsOn: boolean) => {
           };
 
           console.log(
-            '[notificationsService]: sending requestBody to /api/notifier via DELETE: ',
+            '[notificationsService] sending requestBody to /api/notifier via DELETE: ',
             requestBody
           );
           await fetch('/api/notifier', {
@@ -162,7 +162,7 @@ const handleNotificationIntervalChange = async (
           };
 
           console.log(
-            '[notificationsService]: sending requestBody to /api/notifier via PATCH: ',
+            '[notificationsService] sending requestBody to /api/notifier via PATCH: ',
             requestBody
           );
           await fetch('/api/notifier', {

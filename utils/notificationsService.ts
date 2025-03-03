@@ -61,8 +61,21 @@ const handleNotificationsChange = async (notificationsOn: boolean) => {
 
         // register the service worker from serviceWorker.ts (if previously registered, it will update the registration)
         serviceWorkerRegistration =
-          await navigator.serviceWorker.register('/serviceWorker.js');
+          await navigator.serviceWorker.register('/serviceWorker.js', {
+            data: {
+              notificationInterval: siteSettings.getNotificationInterval()
+            }
+          });
         console.log('[notificationsService] service worker REGISTERED');
+
+        // Send the initial interval to the service worker
+        if (navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({
+                type: 'initialNotificationInterval',
+                interval: siteSettings.getNotificationInterval(),
+            });
+        }
+        console.log('[notificationsService] service worker interval UPDATED');
       } catch (error) {
         console.error(
           'received error when registering service worker: ',
@@ -111,6 +124,7 @@ const handleNotificationsChange = async (notificationsOn: boolean) => {
         summary: 'You have unsubscribed from notifications.',
         detail:
           "Make sure to check your browser's permissions and rescind notifications for this website.",
+        life: 4000,
       });
     } else {
       throw new Error(

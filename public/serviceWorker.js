@@ -1,5 +1,17 @@
-// ~/public/serviceWorker.ts
+// ~/public/serviceWorker.js
 
+let notificationInterval = 60; // Default value
+
+// update the notification interval when it gets the message from the server
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'initialNotificationInterval') {
+    notificationInterval = event.data.interval;
+    console.log(
+      '[serviceWorker] Received initial notificationInterval:',
+      notificationInterval
+    );
+  }
+});
 
 // when the service worker is registered, the activate event is triggered
 self.addEventListener('activate', async () => {
@@ -7,8 +19,11 @@ self.addEventListener('activate', async () => {
   const subscription = await self.registration.pushManager.subscribe({
     userVisibleOnly: true,
     // will this file have access to the public key in the environment variable when it is registered as a service worker?
-    applicationServerKey: urlBase64ToUint8Array('BLuvMIgFaIErYWv0eQPV_xrZflq4ZJfn5QBGmTE6_FiPnoDokw9NC6DXcUZYsmvHazLHbPc-0vDreGFXQ4hgFp8'), // populated at build time by vite pre-build hook
+    applicationServerKey: urlBase64ToUint8Array(
+      'BLuvMIgFaIErYWv0eQPV_xrZflq4ZJfn5QBGmTE6_FiPnoDokw9NC6DXcUZYsmvHazLHbPc-0vDreGFXQ4hgFp8'
+    ), // populated at build time by vite pre-build hook
   });
+  console.log('[serviceWorker] subscribed to push: ', subscription);
 
   // The siteSettingsService is not accessible to the service worker,
   // but I know that the service stores the interval here, so I will
@@ -16,19 +31,23 @@ self.addEventListener('activate', async () => {
   // TODO: more elegantly get the interval value
   const requestBody = {
     subscription: subscription.toJSON(),
-    interval: Number.parseInt(
-      localStorage.getItem('notificationInterval') ?? '60'
-    ),
+    interval: notificationInterval,
   };
 
-  console.log('[serviceWorker]: sending requestBody to /api/notifier via POST: ', requestBody);
+  console.log(
+    '[serviceWorker] sending requestBody to /api/notifier via POST: ',
+    requestBody
+  );
 
   // send a POST request to /api/notifier to create-subscription
-  await fetch('/api/notifier', {
+  // TODO: get the true URL from a reliable source of information
+  const response = await fetch('http://localhost:3000/api/notifier', {
     method: 'POST',
     headers: { 'Content-type': 'application/json' },
     body: JSON.stringify(requestBody),
   });
+
+  console.log('[serviceWorker] got response', response.body);
 });
 
 self.addEventListener('push', (e) => {
@@ -39,9 +58,7 @@ self.addEventListener('push', (e) => {
 });
 
 // a helper function to make the VAPID public key readable by the Push API
-const urlBase64ToUint8Array = (
-  base64String
-) => {
+const urlBase64ToUint8Array = (base64String) => {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding)
     .replace(/\-/g, '+')

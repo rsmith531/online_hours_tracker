@@ -18,8 +18,8 @@ class SiteSettingsService {
 
   constructor() {
     this.settings = ref({
-      notificationsOn: true,
-      notificationInterval: 60 * 60, // 60 minutes
+      notificationsOn: false,
+      notificationInterval: 60, // * 60, // 60 minutes
     });
 
     // Only run client-side code in browser
@@ -52,13 +52,14 @@ class SiteSettingsService {
         // clear corrupted storage
         localStorage.removeItem('siteSettings');
       }
+    } else {
+      setTimeout(() => {
+        ToastEventBus.emit('add', {
+          summary: 'Welcome to the site!',
+          group: 'settings-toast',
+        });
+      }, 1500);
     }
-    setTimeout(() => {
-      ToastEventBus.emit('add', {
-        summary: 'Welcome to the site!',
-        group: 'settings-toast',
-      });
-    }, 1500);
   }
 
   private saveSettings() {

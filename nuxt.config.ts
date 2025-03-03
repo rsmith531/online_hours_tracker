@@ -37,13 +37,11 @@ export default defineNuxtConfig({
     defaults: {
       fallbacks: {
         'sans-serif': ['Tahoma'],
-        'serif': ['Georgia'],
-        'monospace': ['Courier New']
-      }
+        serif: ['Georgia'],
+        monospace: ['Courier New'],
+      },
     },
-    families: [
-      {name: 'Doto', weights: [400, 800, 900]}
-    ]
+    families: [{ name: 'Doto', weights: [400, 800, 900] }],
   },
   vite: {
     define: {
@@ -68,11 +66,13 @@ export default defineNuxtConfig({
         'serviceWorker.js'
       );
       let serviceWorkerContent = fs.readFileSync(serviceWorkerPath, 'utf-8');
+      // Regex to match the entire applicationServerKey line
+      const regex = /applicationServerKey:\s*urlBase64ToUint8Array\(([^)]*)\)/;
 
       // Replace the placeholder with the actual public key
       serviceWorkerContent = serviceWorkerContent.replace(
-        '__VAPID_PUBLIC_KEY__',
-        process.env.VITE_PUBLIC_VAPID_PUBLIC_KEY
+        regex,
+        `applicationServerKey: urlBase64ToUint8Array('${process.env.VITE_PUBLIC_VAPID_PUBLIC_KEY}')`
       );
 
       fs.writeFileSync(serviceWorkerPath, serviceWorkerContent);

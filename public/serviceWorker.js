@@ -1,7 +1,5 @@
 // ~/public/serviceWorker.ts
 
-declare const self: ServiceWorkerGlobalScope;
-import type { NotifierApiRequest } from 'server/api/notifier';
 
 // when the service worker is registered, the activate event is triggered
 self.addEventListener('activate', async () => {
@@ -16,8 +14,7 @@ self.addEventListener('activate', async () => {
   // but I know that the service stores the interval here, so I will
   // cheat and pick it up directly
   // TODO: more elegantly get the interval value
-  const requestBody: NotifierApiRequest = {
-    // @ts-expect-error I don't really know if this will be a problem or not
+  const requestBody = {
     subscription: subscription.toJSON(),
     interval: Number.parseInt(
       localStorage.getItem('notificationInterval') ?? '60'
@@ -43,8 +40,8 @@ self.addEventListener('push', (e) => {
 
 // a helper function to make the VAPID public key readable by the Push API
 const urlBase64ToUint8Array = (
-  base64String: string
-): Uint8Array<ArrayBuffer> => {
+  base64String
+) => {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding)
     .replace(/\-/g, '+')

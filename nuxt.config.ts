@@ -65,7 +65,7 @@ export default defineNuxtConfig({
       const serviceWorkerPath = path.resolve(
         __dirname,
         'public',
-        'serviceWorker.ts'
+        'serviceWorker.js'
       );
       let serviceWorkerContent = fs.readFileSync(serviceWorkerPath, 'utf-8');
 

@@ -61,7 +61,7 @@ const handleNotificationsChange = async (notificationsOn: boolean) => {
 
         // register the service worker from serviceWorker.ts (if previously registered, it will update the registration)
         serviceWorkerRegistration =
-          await navigator.serviceWorker.register('/serviceWorker.ts');
+          await navigator.serviceWorker.register('/serviceWorker.js');
         console.log('[notificationsService] service worker REGISTERED');
       } catch (error) {
         console.error(

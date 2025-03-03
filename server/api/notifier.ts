@@ -31,8 +31,14 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const requestBody: NotifierApiRequest = await readBody(event);
-    console.log('notifier API got: ', requestBody);
+    let requestBody: NotifierApiRequest | null = null;
+
+    if (['POST', 'PATCH', 'DELETE'].includes(event.method)) {
+      requestBody = await readBody(event);
+      console.log(`[api/notifier] ${event.method} got: `, requestBody);
+    } else {
+      console.log(`[api/notifier] ${event.method} request received`);
+    }
     switch (event.method) {
       case 'GET': {
         // TODO
@@ -48,6 +54,7 @@ export default defineEventHandler(async (event) => {
           subscription: requestBody.subscription,
           interval: Number(requestBody.interval),
         });
+        console.log('[api/notifier] subscribers is now ', subscribers);
         return;
       }
 
@@ -55,13 +62,14 @@ export default defineEventHandler(async (event) => {
         // update-subscription: look up the subscriber and change the interval to the new interval
         if (requestBody.interval && requestBody.subscription) {
           const subscriber = subscribers.findIndex((subscriber) => {
-            subscriber.subscription.endpoint ===
+            return subscriber.subscription.endpoint ===
               requestBody.subscription.endpoint;
           });
 
           if (subscriber !== -1) {
             // found subscriber
             subscribers[subscriber].interval = requestBody.interval;
+            console.log('[api/notifier] subscribers is now ', subscribers);
           } else {
             console.warn(
               'Notifier API: did not find subscriber while updating interval.'
@@ -77,13 +85,16 @@ export default defineEventHandler(async (event) => {
         // remove-subscription: look up the subscriber and remove it
         if (requestBody.subscription) {
           const subscriber = subscribers.findIndex((subscriber) => {
-            subscriber.subscription.endpoint ===
-              requestBody.subscription.endpoint;
+            return (
+              subscriber.subscription.endpoint ===
+              requestBody.subscription.endpoint
+            );
           });
 
           if (subscriber !== -1) {
             // found subscriber
             subscribers.splice(subscriber, 1); // remove the subscriber
+            console.log('[api/notifier] subscribers is now ', subscribers);
           } else {
             console.warn(
               'Notifier API: did not find subscriber while removing subscriber.'

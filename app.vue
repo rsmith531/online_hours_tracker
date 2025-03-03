@@ -41,7 +41,6 @@
 import { computed, ref, onMounted } from 'vue';
 import { VueQueryDevtools } from '@tanstack/vue-query-devtools';
 import { useSiteSettingsService } from '~/utils/siteSettingsService';
-import ToastService from 'primevue/toastservice';
 
 const {
   workday,
@@ -53,17 +52,10 @@ const {
   isWorkdayPaused,
 } = workdayService();
 
-// make a globally accessible Toast Service from primevue
-const app = useNuxtApp();
-app.vueApp.use(ToastService);
 
-// make a signal so that the site settings service sends a toast after it is available
-const toastReady = ref(false);
-let siteSettings;
 onMounted(() => {
-  toastReady.value = true;
-  siteSettings = useSiteSettingsService(toastReady);
-});
+  useSiteSettingsService();
+})
 
 const borderColor = computed(() => {
   if (isPending.value || isWorkdayNull.value) return 'blue';

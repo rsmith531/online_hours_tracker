@@ -1,42 +1,47 @@
 // ~/utils/siteSettingsService.ts
 
-import { useToast } from 'primevue/usetoast';
-import { ref, type Ref, h } from 'vue';
+// TODO: convert to a nuxt plugin
+
+import { ref, type Ref } from 'vue';
+import { ToastEventBus } from 'primevue';
 
 type Settings = {
   notificationsOn: boolean;
   notificationInterval: number; // in seconds
 };
 
+// TODO: think about converting this to a Nuxt plugin
 class SiteSettingsService {
   // member variables
+  private static instance: SiteSettingsService | null = null;
   settings: Ref<Settings>;
-  private toast: ReturnType<typeof useToast> | undefined = undefined;
-  private toastReady: Ref<boolean> | undefined = undefined;
 
-  constructor(toastReady: Ref<boolean>) {
+  constructor() {
     this.settings = ref({
       notificationsOn: true,
       notificationInterval: 60 * 60, // 60 minutes
     });
-    this.toastReady = toastReady;
+
+    // Only run client-side code in browser
     if (import.meta.client) {
-      // Only run client-side code in browser
-      this.toast = useToast();
-      if (this.toast) {
-      } else {
-        console.warn(
-          'SiteSettingsService: Toast injection failed. Make sure ToastProvider is set up.'
-        );
-      }
       this.loadSettings(); // Load settings from localStorage on initialization
     }
+  }
+
+  // return a singleton of this class
+  static getInstance(): SiteSettingsService {
+    if (!SiteSettingsService.instance) {
+      SiteSettingsService.instance = new SiteSettingsService();
+    }
+    return SiteSettingsService.instance;
   }
 
   private loadSettings() {
     // return if not running client-side
     if (!import.meta.client) return;
+
     const storedSettings = localStorage.getItem('siteSettings');
+
     if (storedSettings) {
       try {
         const parsedSettings = JSON.parse(storedSettings);
@@ -47,14 +52,13 @@ class SiteSettingsService {
         // clear corrupted storage
         localStorage.removeItem('siteSettings');
       }
-    } else if (this.toast && this.toastReady?.value) {
-        setTimeout(() => {
-          this.toast?.add({
-            summary: 'Welcome to the site!',
-            group: 'settings-toast',
-          })
-        }, 1);
-      }
+    }
+    setTimeout(() => {
+      ToastEventBus.emit('add', {
+        summary: 'Welcome to the site!',
+        group: 'settings-toast',
+      });
+    }, 1500);
   }
 
   private saveSettings() {
@@ -95,6 +99,11 @@ class SiteSettingsService {
 }
 
 // expose a SiteSettingsService factory to the app
-export const useSiteSettingsService = (toastReady: Ref<boolean>) => {
-  return new SiteSettingsService(toastReady);
+// export const useSiteSettingsService = () => {
+//   return new SiteSettingsService();
+// };
+
+// expose a SiteSettingsService singleton to the app
+export const useSiteSettingsService = () => {
+  return SiteSettingsService.getInstance();
 };

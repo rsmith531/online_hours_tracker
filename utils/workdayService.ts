@@ -3,9 +3,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import type { WorkdayApiResponse } from 'server/api/workday';
 import { computed } from 'vue';
+import { ToastEventBus } from 'primevue';
 
 export function workdayService() {
-  const toast = useToast();
   const queryClient = useQueryClient();
 
   // get the public apiUrl from nuxt.config.ts
@@ -81,7 +81,7 @@ export function workdayService() {
       queryClient.invalidateQueries({ queryKey: ['workday_service'] });
       const startTime: Date | null = updatedWorkdayData.start_time;
       const endTime: Date | null = updatedWorkdayData.end_time;
-      toast.add({
+      ToastEventBus.emit('add', {
         severity: endTime ? 'error' : 'success',
         summary: `${endTime ? 'Closed' : 'Opened'} workday at ${
           endTime
@@ -106,7 +106,7 @@ export function workdayService() {
     },
     onError: (error) => {
       console.error(`Failed to update workday: ${error.message}.`);
-      toast.add({
+      ToastEventBus.emit('add', {
         severity: 'error',
         summary: 'Uh oh',
         detail: 'Something went wrong when trying to update the workday.',
@@ -143,7 +143,8 @@ export function workdayService() {
       const segment = updatedWorkdayData.segments?.at(-1);
       const startTime = segment?.start_time && new Date(segment.start_time);
       const activity = segment?.activity;
-      toast.add({
+
+      ToastEventBus.emit('add', {
         severity: activity === ActivityType.Working ? 'success' : 'warn',
         summary: `${activity === ActivityType.Working ? 'Unpaused' : 'Paused '} workday at ${startTime ? startTime.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : 'error'}`,
         detail:
@@ -155,7 +156,7 @@ export function workdayService() {
     },
     onError: async (error) => {
       console.error(`Failed to pause workday: ${error.message}.`);
-      toast.add({
+      ToastEventBus.emit('add', {
         severity: 'error',
         summary: 'Uh oh',
         detail: 'Something went wrong when trying to update the workday.',

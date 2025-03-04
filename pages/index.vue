@@ -29,6 +29,7 @@ const fieldsetLegend = computed(() => {
     return 'No workday data';
 });
 
+// TODO: is this getting recalculated when the vue-query refreshes?
 const workdayDuration = computed(() => {
     if (!workday.value || !workday.value.segments) {
         return 0;

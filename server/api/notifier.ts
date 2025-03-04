@@ -25,7 +25,6 @@ export default defineEventHandler(async (event) => {
     process.env.VITE_PUBLIC_VAPID_PUBLIC_KEY &&
     process.env.VAPID_PRIVATE_KEY
   ) {
-
     // check if origin is an https, if not or if it does not exist, use a default
     const origin = event.node.req.headers?.origin?.startsWith('https:')
       ? event.node.req.headers.origin
@@ -44,18 +43,8 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    let requestBody: NotifierApiRequest | null = null;
-
-    if (['POST', 'PATCH', 'DELETE'].includes(event.method)) {
-      requestBody = await readBody(event);
-      console.log(`[api/notifier] ${event.method} got: `, requestBody);
-    } else {
-      console.log(`[api/notifier] ${event.method} request received`);
-    }
     switch (event.method) {
       case 'GET': {
-        // TODO: lock down the GET method by requiring an API key in the headers
-
         // send-notification: send a message to ALL subscribers
         subscribers.map((subscriber) => {
           webpush.sendNotification(subscriber.subscription, 'Hello world');
@@ -65,6 +54,7 @@ export default defineEventHandler(async (event) => {
       }
       case 'POST': {
         // create-subscription: add the new subscriber to the subscribers
+        const requestBody = await readBody(event);
         const intervalMs = Number(requestBody.interval) * 1000;
         const currentWorkingTime = getCurrentWorkingTime();
         const nextNotificationTime =
@@ -80,6 +70,7 @@ export default defineEventHandler(async (event) => {
 
       case 'PATCH': {
         // update-subscription: look up the subscriber and change the interval to the new interval
+        const requestBody = await readBody(event);
         if (requestBody.interval && requestBody.subscription) {
           const subscriber = subscribers.findIndex((subscriber) => {
             return (
@@ -105,6 +96,7 @@ export default defineEventHandler(async (event) => {
 
       case 'DELETE': {
         // remove-subscription: look up the subscriber and remove it
+        const requestBody = await readBody(event);
         if (requestBody.subscription) {
           const subscriber = subscribers.findIndex((subscriber) => {
             return (

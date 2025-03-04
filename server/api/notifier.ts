@@ -17,6 +17,9 @@ export type NotifierApiRequest = {
 };
 
 export default defineEventHandler(async (event) => {
+  // check if request is authorized, throws 401 if not
+  const { user } = await requireUserSession(event)
+
   // configure web-push
   if (
     process.env.VITE_PUBLIC_VAPID_PUBLIC_KEY &&

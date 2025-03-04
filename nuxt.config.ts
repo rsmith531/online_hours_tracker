@@ -8,12 +8,7 @@ import path from 'node:path';
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
-  modules: [
-    '@primevue/nuxt-module',
-    '@nuxt/fonts',
-    'nuxt-security',
-    '@nuxtjs/tailwindcss',
-  ],
+  modules: ['@primevue/nuxt-module', '@nuxt/fonts', 'nuxt-security', '@nuxtjs/tailwindcss', 'nuxt-auth-utils'],
   primevue: {
     options: {
       theme: {

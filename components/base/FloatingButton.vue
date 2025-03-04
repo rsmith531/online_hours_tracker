@@ -55,6 +55,13 @@ const items = computed(() => {
       ]
       : []),
     {
+      label: 'Sign Out', icon: 'pi pi-sign-out', command: async () => {
+        const { clear } = useUserSession();
+        await clear();
+        await navigateTo('/login');
+      }
+    },
+    {
       label: 'Settings',
       icon: 'pi pi-cog',
       command: () => {

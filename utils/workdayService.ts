@@ -8,33 +8,41 @@ import { ToastEventBus } from 'primevue';
 export function workdayService() {
   const queryClient = useQueryClient();
 
-  // get the public apiUrl from nuxt.config.ts
-  const runtimeConfig = useRuntimeConfig();
-  const apiUrl = runtimeConfig.public.apiUrl || '/api';
-
   const {
     data: workday,
     refetch,
     isPending,
     isError,
+    suspense: fetchOnServer,
   } = useQuery<WorkDay>({
     queryKey: ['workday_service'],
     queryFn: async (): Promise<WorkDay> => {
       try {
-        const response = await useFetch<WorkdayApiResponse>(
-          `${apiUrl}/workday`
-        );
-        return {
-          start_time: response.data.value?.start_time
-            ? new Date(response.data.value.start_time)
-            : null,
-          end_time: response.data.value?.end_time
-            ? new Date(response.data.value.end_time)
-            : null,
-          segments: response.data.value?.segments
-            ? response.data.value.segments
-            : undefined,
-        };
+        let parsedResponse: WorkDay;
+        if (import.meta.server) {
+          const response = await useFetch<WorkdayApiResponse>('/api/workday');
+          parsedResponse = {
+            start_time: response.data.value?.start_time
+              ? new Date(response.data.value.start_time)
+              : null,
+            end_time: response.data.value?.end_time
+              ? new Date(response.data.value.end_time)
+              : null,
+            segments: response.data.value?.segments
+              ? response.data.value.segments
+              : undefined,
+          };
+        } else {
+          const response = await $fetch<WorkdayApiResponse>('/api/workday');
+          parsedResponse = {
+            start_time: response.start_time
+              ? new Date(response.start_time)
+              : null,
+            end_time: response.end_time ? new Date(response.end_time) : null,
+            segments: response.segments ? response.segments : undefined,
+          };
+        }
+        return parsedResponse;
       } catch (error) {
         console.error('Error fetching workday from API: ', error);
         throw error;
@@ -42,8 +50,6 @@ export function workdayService() {
     },
     // TODO: figure out when to enable this
     enabled: true,
-    // no need to go stale, since the only place data is updated is here
-    staleTime: Number.POSITIVE_INFINITY,
     // refetch to make sure the stopwatch doesn't get too far out of sync
     refetchInterval: 1000 * 60 * 5, // 5 minutes
     placeholderData: {
@@ -57,7 +63,7 @@ export function workdayService() {
     mutationFn: async (): Promise<WorkDay> => {
       try {
         const now = new Date().toISOString();
-        const response = await $fetch<WorkdayApiResponse>(`${apiUrl}/workday`, {
+        const response = await $fetch<WorkdayApiResponse>('/api/workday', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -77,6 +83,8 @@ export function workdayService() {
       }
     },
     onSuccess: async (updatedWorkdayData) => {
+      // https://tanstack.com/query/v5/docs/framework/vue/guides/updates-from-mutation-responses
+      queryClient.setQueryData(['workday_service'], updatedWorkdayData)
       queryClient.invalidateQueries({ queryKey: ['workday_service'] });
       const startTime: Date | null = updatedWorkdayData.start_time;
       const endTime: Date | null = updatedWorkdayData.end_time;
@@ -118,7 +126,7 @@ export function workdayService() {
     mutationFn: async (): Promise<WorkDay> => {
       try {
         const now = new Date().toISOString();
-        const response = await $fetch<WorkdayApiResponse>(`${apiUrl}/workday`, {
+        const response = await $fetch<WorkdayApiResponse>('/api/workday', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -138,6 +146,8 @@ export function workdayService() {
       }
     },
     onSuccess: async (updatedWorkdayData) => {
+      // https://tanstack.com/query/v5/docs/framework/vue/guides/updates-from-mutation-responses
+      queryClient.setQueryData(['workday_service'], updatedWorkdayData)
       queryClient.invalidateQueries({ queryKey: ['workday_service'] });
       const segment = updatedWorkdayData.segments?.at(-1);
       const startTime = segment?.start_time && new Date(segment.start_time);
@@ -188,6 +198,10 @@ export function workdayService() {
   const isWorkdayNull = computed(() => {
     return (workday.value?.start_time === null &&
       workday.value?.end_time === null) as boolean;
+  });
+
+  onServerPrefetch(async () => {
+    await fetchOnServer();
   });
 
   return {

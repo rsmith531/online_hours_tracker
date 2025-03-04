@@ -26,7 +26,7 @@ export interface WorkdayApiResponse {
 
 export default defineEventHandler(async (event) => {
   // check if request is authorized, throws 401 if not
-  const { user } = await requireUserSession(event)
+  await requireUserSession(event)
   
   try {
     // get the current workday

@@ -5,18 +5,20 @@
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
+  <VueQueryDevtools v-if="enableDevTools" />
 
   <SettingsToast />
   <Toast position="bottom-right" />
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import { useSiteSettingsService } from '~/utils/siteSettingsService';
+import { VueQueryDevtools } from '@tanstack/vue-query-devtools';
 
-onMounted(() => {
-  useSiteSettingsService();
-})
+const runtimeConfig = useRuntimeConfig()
+// TODO: does this need to be a ref?
+const enableDevTools = ref<boolean>(
+  runtimeConfig.public.environment === 'development'
+);
 </script>
 
 <style>

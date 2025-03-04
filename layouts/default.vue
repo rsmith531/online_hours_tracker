@@ -9,21 +9,14 @@
         flexGrow: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        position: 'relative'
     }">
         <slot />
         <FloatingButton />
     </div>
-    <VueQueryDevtools v-if="enableDevTools" />
 </template>
 
 <script setup lang="ts">
-import { VueQueryDevtools } from '@tanstack/vue-query-devtools';
-
-const runtimeConfig = useRuntimeConfig()
-// TODO: does this need to be a ref?
-const enableDevTools = ref<boolean>(
-    runtimeConfig.public.environment === 'development'
-);
 
 const {
     isPending,

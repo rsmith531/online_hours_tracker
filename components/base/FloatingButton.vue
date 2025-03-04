@@ -1,7 +1,7 @@
 <!-- ~/components/base/FloatingButton.vue -->
 
 <template>
-  <SpeedDial v-if="workday" :model="items" type="linear" :radius="60" direction="up" :transitionDelay="80" style="
+  <SpeedDial v-if="workday" :model="items" type="semi-circle" :radius="70" direction="up" :transitionDelay="80" style="
     position: absolute; 
     left: calc(50%-20); 
     bottom: 2rem;

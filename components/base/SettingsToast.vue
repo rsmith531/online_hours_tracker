@@ -39,6 +39,7 @@
   </Toast>
 </template>
 
+<!-- TODO: add a cool progress bar to the bottom that counts down until the toast will disappear -->
 <script setup>
 import { ref } from 'vue';
 const siteSettings = useSiteSettingsService();

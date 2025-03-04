@@ -18,7 +18,6 @@ export function workdayService() {
     isPending,
     isError,
   } = useQuery<WorkDay>({
-    // TODO: prevent access on workday until it has gotten a response from the API
     queryKey: ['workday_service'],
     queryFn: async (): Promise<WorkDay> => {
       try {

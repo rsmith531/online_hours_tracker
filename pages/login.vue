@@ -2,7 +2,14 @@
 
 <!-- https://nuxt.com/docs/guide/recipes/sessions-and-authentication#login-page -->
 <template>
-    <form @submit.prevent="login">
+    <form @submit.prevent="login" :style="{
+        display: 'flex',
+        flexDirection: 'column',
+        flexGrow: 1,
+        gap:'10px',
+        justifyContent: 'center',
+        alignItems: 'center',
+    }">
         <input v-model="credentials.email" type="email" placeholder="Email" />
         <input v-model="credentials.password" type="password" placeholder="Password" />
         <button type="submit">Login</button>
@@ -10,6 +17,10 @@
 </template>
 
 <script setup lang="ts">
+// no layouts allowed on login page
+definePageMeta({
+    layout: false
+})
 const { fetch: refreshSession } = useUserSession()
 const credentials = reactive({
     email: '',

@@ -7,7 +7,6 @@ import path from 'node:path';
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
-  devtools: { enabled: true },
   modules: ['@primevue/nuxt-module', '@nuxt/fonts', 'nuxt-security', '@nuxtjs/tailwindcss', 'nuxt-auth-utils'],
   primevue: {
     options: {
@@ -25,6 +24,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiUrl: '/api',
+      environment: process.env.VITE_PUBLIC_ENVIRONMENT
     },
   },
   css: ['primeicons/primeicons.css'],
@@ -73,4 +73,8 @@ export default defineNuxtConfig({
       fs.writeFileSync(serviceWorkerPath, serviceWorkerContent);
     },
   },
+  devtools: {
+    enabled: process.env.VITE_PUBLIC_ENVIRONMENT === 'development'
+  },
+
 });

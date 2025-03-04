@@ -24,8 +24,8 @@ const {
 
 const { user } = useUserSession();
 const fieldsetLegend = computed(() => {
-    if (isWorkdayOpen.value) return `${user.value.name ? `${user.value.name}'s` : "Your"} workday`;
-    if (isWorkdayClosed.value) return `${user.value.name ? `${user.value.name}'s` : "Your"} last workday`;
+    if (isWorkdayOpen.value) return `${user.value?.name ? `${user.value.name}'s` : "Your"} workday`;
+    if (isWorkdayClosed.value) return `${user.value?.name ? `${user.value.name}'s` : "Your"} last workday`;
     return 'No workday data';
 });
 

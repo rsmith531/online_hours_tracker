@@ -1,11 +1,10 @@
 # TODO
 
 - [ ] address TODOs
-- [ ] browser devtools should only render in dev mode
-- [ ] configure middleware to authenticate inbound traffic
-- [ ] Apply SEO optimization
+- [x] browser devtools should only render in dev mode
+- [x] configure middleware to authenticate inbound traffic
 - [ ] Make sure I am using all `nuxt-secure` features
-- [ ] make my APIs type-safe
+- [ ] make my APIs type-safe (with zod?)
 - [ ] Use an ORM for `db.ts`
 - [ ] flesh out the readme
 - [ ] get a domain name from namecheap

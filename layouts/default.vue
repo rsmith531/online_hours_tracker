@@ -1,19 +1,21 @@
+<!-- ~/layouts/default.vue -->
+
 <template>
-    <div :style="{
-        border: `2px solid ${borderColor}`,
-        borderRadius: '1rem',
-        transition: 'all 1.5s ease',
-        boxShadow: `inset 0 0 2rem ${borderColor}`,
-        display: 'flex',
-        flexDirection: 'column',
-        flexGrow: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        position: 'relative'
-    }">
-        <slot />
-        <FloatingButton />
-    </div>
+        <div :style="{
+            borderRadius: '1rem',
+            border: `2px solid ${borderColor}`,
+            boxShadow: `inset 0 0 2rem ${borderColor}`,
+            transition: 'all 1s ease',
+            display: 'flex',
+            flexDirection: 'column',
+            flexGrow: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            position: 'relative'
+        }">
+            <slot />
+            <FloatingButton />
+        </div>
 </template>
 
 <script setup lang="ts">

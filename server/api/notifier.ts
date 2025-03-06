@@ -1,5 +1,6 @@
 // ~/server/api/notifier.ts
 
+import { useRequestURL } from 'nuxt/app';
 import type { PushSubscription } from 'web-push';
 import webpush from 'web-push';
 import { ActivityType } from '~/utils/workdayService';
@@ -22,10 +23,7 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
 
   // configure web-push
-  if (
-    config.public.vapidPublicKey &&
-    config.vapidPrivateKey
-  ) {
+  if (config.public.vapidPublicKey && config.vapidPrivateKey) {
     // check if origin is an https, if not or if it does not exist, use a default
     const origin = event.node.req.headers?.origin?.startsWith('https:')
       ? event.node.req.headers.origin
@@ -82,7 +80,14 @@ export default defineEventHandler(async (event) => {
 
           if (subscriber !== -1) {
             // found subscriber
+            // TODO: extract from here and PUT into a function
+            const intervalMs = Number(requestBody.interval) * 1000;
+            const currentWorkingTime = getCurrentWorkingTime();
+            const nextNotificationTime =
+              Math.ceil(currentWorkingTime / intervalMs) * intervalMs;
             subscribers[subscriber].interval = requestBody.interval;
+            subscribers[subscriber].targetNotificationTime =
+              nextNotificationTime;
             console.log('[api/notifier] subscribers is now ', subscribers);
           } else {
             console.warn(
@@ -138,19 +143,15 @@ export default defineEventHandler(async (event) => {
 
 async function checkAndSendNotifications() {
   const totalWorkingDuration = getCurrentWorkingTime();
+  const url = useRequestURL(event);
 
   for (const subscriber of subscribers) {
-    if (
-      // totalWorkingDuration - subscriber.lastNotificationTime >=
-      // subscriber.interval * 1000
-      totalWorkingDuration >= subscriber.targetNotificationTime
-    ) {
+    if (totalWorkingDuration >= subscriber.targetNotificationTime) {
       try {
         await webpush.sendNotification(
           subscriber.subscription,
           `You have been working for ${formatDuration(totalWorkingDuration)}`
         );
-        // subscriber.lastNotificationTime = totalWorkingDuration;
         // Calculate the next target notification time
         subscriber.targetNotificationTime += subscriber.interval * 1000;
       } catch (error) {

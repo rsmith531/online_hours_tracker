@@ -1,6 +1,5 @@
 // ~/server/api/notifier.ts
 
-import { useRequestURL } from 'nuxt/app';
 import type { PushSubscription } from 'web-push';
 import webpush from 'web-push';
 import { ActivityType } from '~/utils/workdayService';
@@ -143,7 +142,6 @@ export default defineEventHandler(async (event) => {
 
 async function checkAndSendNotifications() {
   const totalWorkingDuration = getCurrentWorkingTime();
-  const url = useRequestURL(event);
 
   for (const subscriber of subscribers) {
     if (totalWorkingDuration >= subscriber.targetNotificationTime) {

@@ -7,9 +7,13 @@
 - [ ] make my APIs type-safe (with zod?)
 - [ ] Use an ORM for `db.ts`
 - [ ] flesh out the readme
+- [ ] make the readme an "about" page with a md2html library
 - [ ] get a domain name from namecheap
 - [ ] get hosted on a VM
 - [ ] configure caddy to fwd traffic to this app
+- [ ] check with Push API to see how to link back to webpage
+- [ ] add a timeline to summarize the 24hr period
+    - Start time, 8 hr mark, break periods, current time
 
 
 # Nuxt Minimal Starter
@@ -101,3 +105,6 @@ Check out the [deployment documentation](https://nuxt.com/docs/getting-started/d
 - [How to see console logs for service worker](https://discourse.mozilla.org/t/how-to-enable-console-log-from-service-worker/130394/8)
 - [HTTP response status codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
 - [How to do basic Nuxt auth](https://nuxt.com/docs/guide/recipes/sessions-and-authentication)
+- [Running Caddy on Render](https://kofi.sexy/blog/zero-downtime-render-disk)
+- [Deploying to Hetzner](https://turbocloud.dev/book/deploy-nuxt-digital-ocean-hetzner/)
+- [Putting a Nuxt3 app on a VPS](https://dev.to/wimadev/deploy-a-nuxt-3-app-on-a-vps-minimal-setup-3h91)

@@ -48,8 +48,6 @@ export function workdayService() {
         throw error;
       }
     },
-    // TODO: figure out when to enable this
-    enabled: true,
     // refetch to make sure the stopwatch doesn't get too far out of sync
     refetchInterval: 1000 * 60 * 5, // 5 minutes
     placeholderData: {

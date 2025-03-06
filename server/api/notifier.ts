@@ -19,11 +19,12 @@ export type NotifierApiRequest = {
 export default defineEventHandler(async (event) => {
   // check if request is authorized, throws 401 if not
   await requireUserSession(event);
+  const config = useRuntimeConfig();
 
   // configure web-push
   if (
-    process.env.VITE_PUBLIC_VAPID_PUBLIC_KEY &&
-    process.env.VAPID_PRIVATE_KEY
+    config.public.vapidPublicKey &&
+    config.vapidPrivateKey
   ) {
     // check if origin is an https, if not or if it does not exist, use a default
     const origin = event.node.req.headers?.origin?.startsWith('https:')
@@ -32,8 +33,8 @@ export default defineEventHandler(async (event) => {
 
     webpush.setVapidDetails(
       origin,
-      process.env.VITE_PUBLIC_VAPID_PUBLIC_KEY,
-      process.env.VAPID_PRIVATE_KEY
+      config.public.vapidPublicKey,
+      config.vapidPrivateKey
     );
   } else {
     return createError({

@@ -10,7 +10,7 @@
         justifyContent: 'center',
         alignItems: 'center',
     }">
-        <input v-model="credentials.email" type="email" placeholder="Email" />
+        <input v-model="credentials.email" type="text" placeholder="Username" />
         <input v-model="credentials.password" type="password" placeholder="Password" />
         <button type="submit">Login</button>
     </form>

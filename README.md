@@ -7,13 +7,15 @@
 - [ ] make my APIs type-safe (with zod?)
 - [ ] Use an ORM for `db.ts`
 - [ ] flesh out the readme
-- [ ] make the readme an "about" page with a md2html library
-- [ ] get a domain name from namecheap
-- [ ] get hosted on a VM
-- [ ] configure caddy to fwd traffic to this app
+- [ ] make the readme an "about" page with the showdown library
+- [x] get a domain name from namecheap
+- [x] get hosted on a VM
+- [x] configure caddy to fwd traffic to this app
 - [ ] check with Push API to see how to link back to webpage
 - [ ] add a timeline to summarize the 24hr period
     - Start time, 8 hr mark, break periods, current time
+- [x] make the notifications panel not show up when not authenticated
+- [ ] download data as csv button
 
 
 # Nuxt Minimal Starter

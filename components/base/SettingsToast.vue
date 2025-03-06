@@ -42,7 +42,8 @@
 <!-- TODO: add a cool progress bar to the bottom that counts down until the toast will disappear -->
 <script setup>
 import { ref } from 'vue';
-const siteSettings = useSiteSettingsService();
+const { $siteSettings } = useNuxtApp();
+const siteSettings = $siteSettings;
 
 const options = ref(['Off', 'On']);
 const doneLoading = ref(false);

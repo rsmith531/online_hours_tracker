@@ -13,9 +13,9 @@ export default defineNuxtPlugin({
   setup() {
     const settings: Ref<Settings> = ref({
       notificationsOn: false,
-      notificationInterval: 60* 60, // 60 minutes
+      notificationInterval: 60 * 60, // 60 minutes
     });
-        const { loggedIn } = useUserSession();
+    const { loggedIn } = useUserSession();
 
     const loadSettings = () => {
       // return if not running client-side
@@ -54,15 +54,14 @@ export default defineNuxtPlugin({
     };
 
     watch(
-        loggedIn,
-        (newLoggedIn, oldLoggedIn) => {
-            console.log(`loggedIn new: ${newLoggedIn}; old: ${oldLoggedIn}`)
-          if (newLoggedIn) {
-            loadSettings();
-          }
-        },
-        { immediate: true }
-      );
+      loggedIn,
+      (newLoggedIn) => {
+        if (newLoggedIn) {
+          loadSettings();
+        }
+      },
+      { immediate: true }
+    );
 
     const siteSettingsService = {
       settings,

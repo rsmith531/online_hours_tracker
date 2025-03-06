@@ -1,4 +1,6 @@
 // ~/plugins/notifications.client.ts
+import { ToastEventBus } from 'primevue';
+import type { NotifierApiRequest } from 'server/api/notifier';
 
 export default defineNuxtPlugin({
   name: 'notifications',
@@ -57,29 +59,31 @@ export default defineNuxtPlugin({
                 );
               }
             }
-            console.log('[notificationsService] browser notifications ENABLED');
+            console.info(
+              '[notificationsService] browser notifications ENABLED'
+            );
 
             // register the service worker from serviceWorker.ts (if previously registered, it will update the registration)
-            serviceWorkerRegistration = await navigator.serviceWorker.register(
-              '/serviceWorker.js',
-              {
-                data: {
-                  notificationInterval: siteSettings.getNotificationInterval(),
-                },
-              }
-            );
-            console.log('[notificationsService] service worker REGISTERED');
+            serviceWorkerRegistration =
+              await navigator.serviceWorker.register('/serviceWorker.js');
+            console.info('[notificationsService] service worker REGISTERED');
 
             // Send the initial interval to the service worker
-            if (navigator.serviceWorker.controller) {
-              navigator.serviceWorker.controller.postMessage({
-                type: 'initialNotificationInterval',
-                interval: siteSettings.getNotificationInterval(),
-              });
-            }
-            console.log(
-              '[notificationsService] service worker interval UPDATED'
-            );
+            navigator.serviceWorker.ready.then((registration) => {
+              if (registration.active) {
+                registration.active.postMessage({
+                  type: 'initialNotificationInterval',
+                  interval: siteSettings.getNotificationInterval(),
+                });
+                console.info(
+                  '[notificationsService] service worker interval UPDATED'
+                );
+              } else {
+                console.warn(
+                  '[notificationsService] could not update service worker interval'
+                );
+              }
+            });
           } catch (error) {
             console.error(
               'received error when registering service worker: ',

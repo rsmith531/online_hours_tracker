@@ -21,7 +21,7 @@ const {
   isWorkdayNull,
   isWorkdayOpen,
   isWorkdayPaused,
-} = workdayService();
+} = useWorkday();
 
 const items = computed(() => {
   return [

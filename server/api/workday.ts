@@ -10,7 +10,7 @@ import {
   getLastClosedSession,
   getOpenSegment,
 } from '../utils/db';
-import { ActivityType } from '~/utils/workdayService';
+import { ActivityType } from '~/composables/workdayService';
 
 export interface WorkdayApiResponse {
   start_time: Date | null;
@@ -26,8 +26,8 @@ export interface WorkdayApiResponse {
 
 export default defineEventHandler(async (event) => {
   // check if request is authorized, throws 401 if not
-  await requireUserSession(event)
-  
+  await requireUserSession(event);
+
   try {
     // get the current workday
     if (event.method === 'GET') {
@@ -177,7 +177,7 @@ export default defineEventHandler(async (event) => {
                   }
                 ),
               };
-              
+
               return response;
             }
             return createError({

@@ -2,7 +2,7 @@
 
 // TODO: someday, transition to using an ORM such as prisma or drizzle
 import Database from 'better-sqlite3';
-import type { ActivityType } from '~/utils/workdayService';
+import type { ActivityType } from '~/composables/workdayService';
 const db = new Database('workday_data.sqlite');
 // https://github.com/WiseLibs/better-sqlite3/blob/master/docs/performance.md
 db.pragma('journal_mode = WAL');
@@ -109,7 +109,9 @@ export function getOpenSession(): Session | undefined {
 
 export function getLastClosedSession(): Session | undefined {
   const session = db
-    .prepare('SELECT * FROM sessions WHERE end IS NOT NULL ORDER BY end DESC LIMIT 1')
+    .prepare(
+      'SELECT * FROM sessions WHERE end IS NOT NULL ORDER BY end DESC LIMIT 1'
+    )
     .get() as RawSession;
   if (!session) {
     return undefined;
@@ -137,8 +139,9 @@ export function getSegmentsForSession(sessionId: number): Segment[] {
 
 // TODO: get rid of the double call to getCurrentWeek()
 export function getSessionsForWeek(
-    startDate: Date = getCurrentWeek().startDate,
-    endDate: Date = getCurrentWeek().endDate): Session[] {
+  startDate: Date = getCurrentWeek().startDate,
+  endDate: Date = getCurrentWeek().endDate
+): Session[] {
   const sessions = db
     .prepare(
       'SELECT * FROM sessions WHERE start >= ? AND start <= ? ORDER BY start ASC'

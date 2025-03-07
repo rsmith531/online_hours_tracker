@@ -20,7 +20,7 @@ const {
     isWorkdayClosed,
     isWorkdayOpen,
     isWorkdayPaused,
-} = workdayService();
+} = useWorkday();
 
 const { user } = useUserSession();
 const fieldsetLegend = computed(() => {

@@ -26,7 +26,7 @@ const {
     isWorkdayNull,
     isWorkdayOpen,
     isWorkdayPaused,
-} = workdayService();
+} = useWorkday();
 
 const borderColor = computed(() => {
     if (isPending.value || isWorkdayNull.value) return 'blue';

@@ -1,11 +1,11 @@
-// ~/utils/workdayService.ts
+// ~/composables/workdayService.ts
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import type { WorkdayApiResponse } from 'server/api/workday';
 import { computed } from 'vue';
 import { ToastEventBus } from 'primevue';
 
-export function workdayService() {
+export function useWorkday() {
   const queryClient = useQueryClient();
 
   const {
@@ -82,7 +82,7 @@ export function workdayService() {
     },
     onSuccess: async (updatedWorkdayData) => {
       // https://tanstack.com/query/v5/docs/framework/vue/guides/updates-from-mutation-responses
-      queryClient.setQueryData(['workday_service'], updatedWorkdayData)
+      queryClient.setQueryData(['workday_service'], updatedWorkdayData);
       queryClient.invalidateQueries({ queryKey: ['workday_service'] });
       const startTime: Date | null = updatedWorkdayData.start_time;
       const endTime: Date | null = updatedWorkdayData.end_time;
@@ -145,7 +145,7 @@ export function workdayService() {
     },
     onSuccess: async (updatedWorkdayData) => {
       // https://tanstack.com/query/v5/docs/framework/vue/guides/updates-from-mutation-responses
-      queryClient.setQueryData(['workday_service'], updatedWorkdayData)
+      queryClient.setQueryData(['workday_service'], updatedWorkdayData);
       queryClient.invalidateQueries({ queryKey: ['workday_service'] });
       const segment = updatedWorkdayData.segments?.at(-1);
       const startTime = segment?.start_time && new Date(segment.start_time);

@@ -2,7 +2,7 @@
 
 import type { PushSubscription } from 'web-push';
 import webpush from 'web-push';
-import { ActivityType } from '~/utils/workdayService';
+import { ActivityType } from '~/composables/workdayService';
 
 // the list of subscribers to the push notifications
 const subscribers: {
@@ -144,7 +144,10 @@ async function checkAndSendNotifications() {
   const totalWorkingDuration = getCurrentWorkingTime();
 
   for (const subscriber of subscribers) {
-    if (totalWorkingDuration >= subscriber.targetNotificationTime) {
+    if (
+      totalWorkingDuration >= subscriber.targetNotificationTime &&
+      totalWorkingDuration !== 0
+    ) {
       try {
         await webpush.sendNotification(
           subscriber.subscription,

@@ -81,6 +81,7 @@ const notificationInputValue = computed({
 
 let debounceTimer;
 const onNotificationIntervalChange = (newValue) => {
+  if (newValue * 60 === siteSettings.getNotificationInterval()) return;
   clearTimeout(debounceTimer);
   doneLoading.value = true;
   debounceTimer = setTimeout(() => {

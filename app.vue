@@ -7,8 +7,7 @@
   </NuxtLayout>
   <VueQueryDevtools v-if="enableDevTools" />
 
-  <SettingsToast />
-  <Toast position="bottom-right" />
+  <AboutModal />
 </template>
 
 <script setup lang="ts">

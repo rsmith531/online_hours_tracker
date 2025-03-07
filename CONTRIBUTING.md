@@ -31,11 +31,13 @@
 
 # TODO
 
+- [ ] figure out if I can load primevue stylesheet on server to avoid FOUC
+- [ ] implement [nuxt-api-shield](https://nuxt.com/modules/api-shield)
 - [ ] address TODOs
 - [x] browser devtools should only render in dev mode
 - [x] configure middleware to authenticate inbound traffic
 - [ ] Make sure I am using all `nuxt-secure` features
-- [ ] make my APIs type-safe (with zod?)
+- [ ] make my APIs type-safe (with [zod](https://zod.dev/?id=installation)?)
 - [ ] Use an ORM for `db.ts`
 - [ ] flesh out the readme
 - [ ] make the readme an "about" page with the showdown library
@@ -47,6 +49,7 @@
     - Start time, 8 hr mark, break periods, current time
 - [x] make the notifications panel not show up when not authenticated
 - [ ] download data as csv button
+- [ ] write test suites
 
 # Deployment
 1. Using PuTTY or another SSH client, tunnel into the hosted VPS.

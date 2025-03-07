@@ -21,6 +21,8 @@ export default defineNuxtConfig({
       },
     },
   },
+  vite: { assetsInclude: ['**/*.md'] },
+
   components: [
     {
       path: '~/components',

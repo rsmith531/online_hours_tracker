@@ -52,3 +52,5 @@ The orchestrator of all the bits and pieces that make up this project is [Nuxt](
 - [Running Caddy on Render](https://kofi.sexy/blog/zero-downtime-render-disk)
 - [Deploying to Hetzner](https://turbocloud.dev/book/deploy-nuxt-digital-ocean-hetzner/)
 - [Putting a Nuxt3 app on a VPS](https://dev.to/wimadev/deploy-a-nuxt-3-app-on-a-vps-minimal-setup-3h91)
+- [Vue plugins vs. composables vs. stores](https://bigmachine.io/frontend/what-should-be-a-plugin-vs-a-composable-vs-a-store-in-nuxt)
+- [Good practices and Design Patterns for Vue Composables](https://dev.to/jacobandrewsky/good-practices-and-design-patterns-for-vue-composables-24lk)

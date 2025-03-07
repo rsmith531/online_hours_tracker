@@ -12,7 +12,7 @@
 </template>
 
 <script setup>
-import { Converter } from 'showdown';
+import showdown from 'showdown';
 import { ref } from "vue";
 import readmeFile from "~/README.md?raw"
 
@@ -20,7 +20,7 @@ import readmeFile from "~/README.md?raw"
 const visible = ref(false);
 
 // convert the README.md to html
-const converter = new Converter();
+const converter = new showdown.Converter();
 converter.setFlavor('github');
 const htmlContent = ref(converter.makeHtml(readmeFile));
 </script>

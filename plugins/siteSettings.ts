@@ -37,6 +37,7 @@ export default defineNuxtPlugin({
           localStorage.removeItem('siteSettings');
         }
       } else if (loggedIn) {
+        saveSettings();
         setTimeout(() => {
           ToastEventBus.emit('add', {
             summary: 'Welcome to the site!',

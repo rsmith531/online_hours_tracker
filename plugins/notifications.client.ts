@@ -84,6 +84,15 @@ export default defineNuxtPlugin({
                 );
               }
             });
+            
+          // send toast telling users to make sure to revoke notifications permissions
+          ToastEventBus.emit('add', {
+            severity: 'info',
+            summary: 'You have subscribed to notifications.',
+            detail:
+              "You can safely close this tab.",
+            life: 4000,
+          });
           } catch (error) {
             console.error(
               'received error when registering service worker: ',
@@ -118,7 +127,7 @@ export default defineNuxtPlugin({
                 body: JSON.stringify(requestBody),
               });
             } else {
-              throw new Error("Client's Push API is not subscribed.");
+              throw new Error("You were not subscribed to notifications.");
             }
           } else {
             throw new Error('Service worker not ready.');

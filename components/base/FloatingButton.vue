@@ -6,6 +6,14 @@
     left: calc(50%-20); 
     bottom: 2rem;
   " :tooltipOptions="{ position: 'left' }">
+    <template #item="{ item }">
+      <Button v-tooltip.top="{
+        value: item.label,
+        showDelay: 600,
+        hideDelay: 300,
+        autoHide: false,
+      }" rounded :icon="item.icon" severity="secondary" @click="item.command" />
+    </template>
   </SpeedDial>
 </template>
 

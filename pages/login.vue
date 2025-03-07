@@ -6,7 +6,7 @@
         display: 'flex',
         flexDirection: 'column',
         flexGrow: 1,
-        gap:'10px',
+        gap: '10px',
         justifyContent: 'center',
         alignItems: 'center',
     }">
@@ -17,11 +17,14 @@
 </template>
 
 <script setup lang="ts">
+import { useWorkday } from '~/composables/workdayService';
+
 // no layouts allowed on login page
 definePageMeta({
     layout: false
 })
 const { fetch: refreshSession } = useUserSession()
+const { refetch: refetchWorkday } = useWorkday();
 const credentials = reactive({
     email: '',
     password: '',
@@ -34,8 +37,10 @@ async function login() {
         .then(async () => {
             // Refresh the session on client-side and redirect to the home page
             await refreshSession()
+            // refetch the workday data
+            refetchWorkday();
             await navigateTo('/')
         })
-        .catch(() => alert('Bad credentials'))
+        .catch(() => { alert('Bad credentials') })
 }
 </script>

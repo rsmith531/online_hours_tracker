@@ -18,7 +18,7 @@
         <slot />
         <FloatingButton />
         <SettingsToast />
-        <Toast position="bottom-right" />
+        <Toast position="bottom-right" :style="{maxWidth: '90%'}" />
     </div>
 </template>
 

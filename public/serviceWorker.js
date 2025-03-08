@@ -65,6 +65,11 @@ self.addEventListener('push', (e) => {
     // clicking the notification should take the user to the website
     self.registration.showNotification('Workday reminder', {
       body: e.data?.text(),
+      tag: 'workday-tracker',
+      icon: new URL('/favicon.ico', self.location.origin).href,
+      actions: [
+        { action: 'go-to-dashboard', title: 'Go to dashboard' },
+      ],
     });
   } catch (error) {
     console.error(
@@ -73,6 +78,37 @@ self.addEventListener('push', (e) => {
     );
     console.trace();
   }
+});
+
+// behavior for when the push notification is clicked
+self.addEventListener('notificationclick', (event) => {
+  const promiseChain = async (event) => {
+    // user clicked the notification, not its button
+    if (!event.action) {
+      // go to the website, accounting for the promise for the waitUntil()
+      return sendClientToWebsite();
+    }
+
+    // user clicked on one of the notification's buttons
+    switch (event.action) {
+      case 'go-to-dashboard': {
+        // go to the website, accounting for the promise for the waitUntil()
+        return sendClientToWebsite();
+      }
+      default: {
+        console.warn(
+          `[pushNotification] unknown action clicked: ${event.action}`
+        );
+      }
+    }
+
+    // close the notification
+    const clickedNotification = event.notification;
+    return clickedNotification.close();
+  };
+
+  // keep the service worker alive while the user's response is handled
+  event.waitUntil(promiseChain(event));
 });
 
 // a helper function to make the VAPID public key readable by the Push API
@@ -90,4 +126,43 @@ const urlBase64ToUint8Array = (base64String) => {
   }
 
   return outputArray;
+};
+
+/**
+ * checks if the user's browser has any open tabs or windows at our
+ * website already and focuses it, or opens a new window to our
+ * website if they don't.
+ */
+const sendClientToWebsite = () => {
+  // get the absolute URL from this relative URL
+  const urlToOpen = new URL('/', self.location.origin).href;
+
+  // get a list of WindowClient objects
+  return clients
+    .matchAll({
+      type: 'window', // only windows and tabs, no service workers
+      includeUncontrolled: true, // even the ones this service worker doesn't control
+    })
+    .then((windowClients) => {
+      let matchingClient = null;
+
+      for (let i = 0; i < windowClients.length; i++) {
+        const windowClient = windowClients[i];
+        if (windowClient.url === urlToOpen) {
+          matchingClient = windowClient;
+          break;
+        }
+      }
+
+      if (matchingClient) {
+        return matchingClient.focus();
+      }
+      return clients.openWindow(urlToOpen);
+    })
+    .catch((error) => {
+      console.error(
+        '[sendClientToWebsite] encountered a problem while sending user to website: ',
+        error
+      );
+    });
 };

@@ -1,15 +1,7 @@
 <!-- ~/pages/index.vue -->
 
 <template>
-
-    <Fieldset>
-        <template #legend>
-            <p class="
-          text-2xl sm:text-4xl">{{ fieldsetLegend }}</p>
-        </template>
-        <DigitalClock :time="workdayDuration" :stopwatch="isWorkdayOpen && !isWorkdayPaused" />
-    </Fieldset>
-
+    <DigitalClock :time="workdayDuration" :stopwatch="isWorkdayOpen && !isWorkdayPaused" />
 </template>
 
 <script setup>
@@ -17,17 +9,10 @@ import { computed } from 'vue';
 
 const {
     workday,
-    isWorkdayClosed,
     isWorkdayOpen,
     isWorkdayPaused,
 } = useWorkday();
 
-const { user } = useUserSession();
-const fieldsetLegend = computed(() => {
-    if (isWorkdayOpen.value) return `${user.value?.name ? `${user.value.name}'s` : "Your"} workday`;
-    if (isWorkdayClosed.value) return `${user.value?.name ? `${user.value.name}'s` : "Your"} last workday`;
-    return 'No workday data';
-});
 
 // TODO: is this getting recalculated when the vue-query refreshes?
 const workdayDuration = computed(() => {

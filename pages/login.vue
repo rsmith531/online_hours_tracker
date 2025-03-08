@@ -2,27 +2,62 @@
 
 <!-- https://nuxt.com/docs/guide/recipes/sessions-and-authentication#login-page -->
 <template>
-    <form @submit.prevent="login" :style="{
+    <div :style="{
         display: 'flex',
         flexDirection: 'column',
         flexGrow: 1,
-        gap: '10px',
         justifyContent: 'center',
         alignItems: 'center',
     }">
-        <input v-model="credentials.email" type="text" placeholder="Username" />
-        <input v-model="credentials.password" type="password" placeholder="Password" />
-        <button type="submit">Login</button>
-    </form>
+        <Card style="width: 25rem; overflow: hidden;">
+
+            <template #title>Welcome to Workday Tracker!</template>
+
+            <template #subtitle class="pb-4">Please sign in to continue</template>
+
+            <template #content>
+                <form @submit.prevent="login" :style="{ marginTop: '1rem', marginBottom: '1rem' }">
+                    <InputGroup class="pb-7 pt-2">
+                        <InputGroupAddon>
+                            <i class="pi pi-user"></i>
+                        </InputGroupAddon>
+                        <FloatLabel variant="over">
+                            <InputText inputId="email" v-model="credentials.email" />
+                            <label for="email">Username</label>
+                        </FloatLabel>
+                    </InputGroup>
+                    <InputGroup>
+                        <InputGroupAddon>
+                            <i class="pi pi-key"></i>
+                        </InputGroupAddon>
+                        <FloatLabel variant="over">
+                            <Password v-model="credentials.password" inputId="password" toggleMask :feedback="false" />
+                            <label for="password">Password</label>
+                        </FloatLabel>
+                    </InputGroup>
+                </form>
+            </template>
+            <template #footer>
+                <div class="flex gap-4 mt-1 justify-end">
+                    <Button @click="login" icon="pi pi-sign-in" label="Login" :loading="loading" />
+                </div>
+            </template>
+        </Card>
+    </div>
+
 </template>
 
 <script setup lang="ts">
 import { useWorkday } from '~/composables/workdayService';
+import { ref } from 'vue';
 
 // no layouts allowed on login page
 definePageMeta({
     layout: false
 })
+
+const loading = ref(false);
+
 const { fetch: refreshSession } = useUserSession()
 const { refetch: refetchWorkday } = useWorkday();
 const credentials = reactive({
@@ -30,6 +65,7 @@ const credentials = reactive({
     password: '',
 })
 async function login() {
+    loading.value = true;
     $fetch('/api/login', {
         method: 'POST',
         body: credentials
@@ -42,5 +78,6 @@ async function login() {
             await navigateTo('/')
         })
         .catch(() => { alert('Bad credentials') })
+    loading.value = false;
 }
 </script>

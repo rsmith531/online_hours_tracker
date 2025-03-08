@@ -1,53 +1,55 @@
 <!-- DigitalClock.vue -->
 
 <template>
-  <div :style="{
-      display: 'flex', 
+  <Panel toggleable :style="{borderRadius: '15px',
+      boxShadow: ` 0 0 6rem ${borderColor}`,
+      transition: 'all 0.7s ease-in-out',}" class="sm:min-w-[53.5rem]">
+    <template #header>
+      <p class="
+        text-2xl sm:text-4xl p-3">{{ fieldsetLegend }}</p>
+    </template>
+    <div :style="{
+      display: 'flex',
       flexDirection: 'row',
       gap: '0.5rem',
       overflow: 'hidden',
       alignContent: 'center',
       justifyContent: 'center'
-      }">
-    <NumberDisplay :number="hoursTens" />
-    <NumberDisplay :number="hoursOnes" />
-    <p
-      :style="{
+    }">
+      <NumberDisplay :number="hoursTens" />
+      <NumberDisplay :number="hoursOnes" />
+      <p :style="{
         width: 'fit-content',
         maxWidth: 'calc(100%/8)',
         display: 'flex',
         alignItems: 'center'
-      }"
-      class="
+      }" class="
         text-2xl sm:text-8xl 
         h-[4rem] sm:h-[8rem] 
         p-[0rem] sm:p-[1rem]
-      "
-    >
-      :
-    </p>
-    <NumberDisplay :number="minutesTens" />
-    <NumberDisplay :number="minutesOnes" />
-    <p
-      :style="{
+      ">
+        :
+      </p>
+      <NumberDisplay :number="minutesTens" />
+      <NumberDisplay :number="minutesOnes" />
+      <p :style="{
         width: 'fit-content',
         maxWidth: 'calc(100%/8)',
         display: 'flex',
         alignItems: 'center'
-      }"
-      class="
+      }" class="
         text-2xl sm:text-8xl 
         h-[4rem] sm:h-[8rem] 
         p-[0rem] sm:p-[1rem]
-      "
-    >
-      :
-    </p>
-    <NumberDisplay :number="secondsTens" />
-    <NumberDisplay :number="secondsOnes" />
-  </div>
+      ">
+        :
+      </p>
+      <NumberDisplay :number="secondsTens" />
+      <NumberDisplay :number="secondsOnes" />
+    </div>
+  </Panel>
 </template>
-  
+
 <script setup>
 const props = defineProps({
   time: {
@@ -59,6 +61,36 @@ const props = defineProps({
     required: false,
     default: true,
   },
+});
+
+const { user } = useUserSession();
+
+const {
+  isWorkdayClosed,
+  isWorkdayOpen,
+} = useWorkday();
+const {
+    isPending,
+    isWorkdayNull,
+    isWorkdayPaused,
+} = useWorkday();
+
+const borderColor = computed(() => {
+    if (isPending.value || isWorkdayNull.value) return 'blue';
+    if (isWorkdayClosed.value) return 'red';
+    if (isWorkdayOpen.value) {
+        if (!isWorkdayPaused.value) {
+            return 'green';
+        }
+        return 'yellow';
+    }
+    return 'grey';
+});
+
+const fieldsetLegend = computed(() => {
+  if (isWorkdayOpen.value) return `${user.value?.name ? `${user.value.name}'s` : "Your"} workday`;
+  if (isWorkdayClosed.value) return `${user.value?.name ? `${user.value.name}'s` : "Your"} last workday`;
+  return 'No workday data';
 });
 
 const displayTime = ref(props.time);

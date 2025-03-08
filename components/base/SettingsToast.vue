@@ -1,12 +1,12 @@
 <!-- ~/components/base/SettingsToast.vue -->
 
 <template>
-  <Toast position="top-center" group="settings-toast">
+  <Toast id="settings-container"  position="top-center" group="settings-toast" :style="{width: 'fit-content'}">
     <template #container="{ message, closeCallback }">
       <div class="
             p-[0.5rem] sm:p-[1rem]" :style="{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }">
-        <h1 :style="{ fontWeight: 'bold', textAlign: 'center' }">Settings</h1>
-        <Panel header="Notifications" :style="{ width: 'fit-content', alignSelf: 'center' }" :pt="{
+        <h1 :style="{ fontWeight: 'bold', textAlign: 'center' }" class="text-3xl">Settings</h1>
+        <Panel header="Notifications" :style="{ width: 'fit-content', alignSelf: 'center' }" class="my-4" :pt="{
           content: {
             style: { display: 'flex', flexDirection: 'row', gap: '1rem', width: 'fit-content' }
           },
@@ -20,15 +20,7 @@
             <InputNumber incrementIcon="pi pi-plus" decrementIcon="pi pi-minus" variant="filled"
               :modelValue="notificationInputValue" inputId="frequency" @update:modelValue="onNotificationIntervalChange"
               size="small" :min="1" :max="60 * 24 - 1" showButtons buttonLayout="stacked" suffix=" minutes"
-              :disabled="notificationSelectValue === 'Off'" :pt="{
-                input: {
-                  class: {
-                    style: {
-                      width: 'min-content'
-                    }
-                  }
-                }
-              }"></InputNumber>
+              :disabled="notificationSelectValue === 'Off'"  :inputStyle="{width: '9rem'}"></InputNumber>
             <label for="frequency">Frequency</label>
           </IftaLabel>
         </Panel>

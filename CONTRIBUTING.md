@@ -62,7 +62,7 @@
 3. Make sure there are SSH keys for Github.
     - Navigate to project directory.
       ```bash
-      cd ~/projects/workday_tracker/
+      cd ~/projects/workday_tracker/01_my_instance
       ```
     - Confirm there is a `git_ssh_key`file and a `git_ssh_key.pub` file in the directory.
        ```bash

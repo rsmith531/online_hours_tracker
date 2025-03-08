@@ -3,6 +3,7 @@
 import type { PushSubscription } from 'web-push';
 import webpush from 'web-push';
 import { ActivityType } from '../../composables/workdayService';
+import { getOpenSession, getSegmentsForSession } from '../../utils/db';
 
 // the list of subscribers to the push notifications
 const subscribers: {

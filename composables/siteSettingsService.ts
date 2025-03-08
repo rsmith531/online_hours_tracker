@@ -1,4 +1,4 @@
-// ~/plugins/siteSettingsService.ts
+// ~/composables/siteSettingsService.ts
 
 import { ref, type Ref } from 'vue';
 import { ToastEventBus } from 'primevue';
@@ -8,9 +8,7 @@ type Settings = {
   notificationInterval: number; // in seconds
 };
 
-export default defineNuxtPlugin({
-  name: 'site-settings',
-  setup() {
+export function useSiteSettings() {
     const settings: Ref<Settings> = ref({
       notificationsOn: false,
       notificationInterval: 60 * 60, // 60 minutes
@@ -95,9 +93,7 @@ export default defineNuxtPlugin({
     };
 
     return {
-      provide: {
-        siteSettings: siteSettingsService,
-      },
+      // necessary to make the plugin helpers available in other parts of the application, like notifications.client.ts
+      ...siteSettingsService,
     };
-  },
-});
+  };

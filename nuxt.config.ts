@@ -24,19 +24,20 @@ export default defineNuxtConfig({
       theme: {
         preset: Aura,
         options: {
+          // aligns primevue dark mode with @nuxtjs/color-mode
           darkModeSelector: '.dark-mode',
         },
       },
     },
   },
   vite: { plugins: [tailwindcss()], assetsInclude: ['**/*.md'] },
-
   components: [
     {
       path: '~/components',
       pathPrefix: false,
     },
   ],
+  // align runtime environment variables with those in the .env file
   runtimeConfig: {
     sessionPassword: process.env.NUXT_SESSION_PASSWORD,
     loginUsername: process.env.NUXT_LOGIN_USERNAME,

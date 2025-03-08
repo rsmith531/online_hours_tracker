@@ -7,6 +7,14 @@
     "paths": {
       "components": [
         "components/*"
+      ],
+      "composables": [
+        "composables/*"
+      ],
+      "//": ["These two fix the type errors in node_modules"],
+      "#imports": [".nuxt/imports.d.ts"],
+      "#app/*": [
+        "node_modules/nuxt/dist/app/*"
       ]
     }
   }

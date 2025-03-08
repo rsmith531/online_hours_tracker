@@ -1,13 +1,15 @@
 // ~/plugins/notifications.client.ts
+import { useSiteSettings } from '../composables/siteSettingsService';
 import { ToastEventBus } from 'primevue';
 import type { NotifierApiRequest } from 'server/api/notifier';
 
 export default defineNuxtPlugin({
   name: 'notifications',
-  dependsOn: ['site-settings'],
+  // dependsOn: ['site-settings'],
   async setup() {
-    const { $siteSettings } = useNuxtApp();
-    const siteSettings = $siteSettings;
+    // const { $siteSettings } = useNuxtApp();
+    // const siteSettings = $siteSettings;
+    const siteSettings = useSiteSettings();
     let serviceWorkerRegistration: ServiceWorkerRegistration;
 
     const handleNotificationsChange = async (notificationsOn: boolean) => {
@@ -112,6 +114,9 @@ export default defineNuxtPlugin({
               await registration.pushManager.getSubscription();
             if (subscription) {
               const requestBody: NotifierApiRequest = {
+                // @ts-expect-error the MDN PushSubscriptionJSON interface 
+                // has all its properties as optional, but they should always 
+                // be there since I am making them be there
                 subscription: subscription.toJSON(),
               };
 
@@ -176,6 +181,9 @@ export default defineNuxtPlugin({
               await registration.pushManager.getSubscription();
             if (subscription) {
               const requestBody: NotifierApiRequest = {
+                // @ts-expect-error the MDN PushSubscriptionJSON interface 
+                // has all its properties as optional, but they should always 
+                // be there since I am making them be there
                 subscription: subscription.toJSON(),
                 interval: notificationInterval,
               };

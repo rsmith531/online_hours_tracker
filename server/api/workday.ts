@@ -9,6 +9,7 @@ import {
   getOpenSession,
   getLastClosedSession,
   getOpenSegment,
+  getSegmentsForSession,
 } from '../../utils/db';
 import { ActivityType } from '../../composables/workdayService';
 

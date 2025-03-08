@@ -5,6 +5,10 @@
 After having spent the past while working in a React/Next stack, I decided I had my feet underneath me enough to try learning how to use Vue & Nuxt. I had heard it described as an up and coming competitor in the space that React and Next dominate. With that in mind, I needed a small project to use as the whetstone upon which I'd sharpen my skills.
 
 Not too long ago, I had decided to create a small WPF app in order to learn how desktop apps can be made, how the Windows notifications API works, and how people make use of the system tray in the taskbar. For this project, I made a simple GUI that allows the user to open, pause, and close a workday. The app shows you how long you've been working and allows you to enable periodic desktop notifications reminding you to take a break.
+<div style="display: flex; flex-direction:row; gap: 2rem;" class="flex-wrap">
+<img src="2025-03-07 17_52_17-Timesheet Dashboard.png" alt="What the desktop application looked like" title="What the desktop application looked like" width="300px" />
+
+<img src="Screenshot 2025-03-07 175254.png" alt="The system tray popover the user sees when clicking the icon" title="The system tray popover the user sees when clicking the icon" width="300px" height="min-content" class="h-min" /></div>
 
 Like most first attempts, the app wasn't perfect. The time calculations were hacked together. The notifications would sometimes send back-to-back, nonstop until you disabled them in the Windows settings, and it didn't show as much information as I'd have liked to display. These imperfections, combined with the relatively small scope of the project, led me to select it as the basis of my Nuxt project. Because I had implemented a version of the baseline features, it allowed me some spare [innovation tokens](https://mcfunley.com/choose-boring-technology#embrace-boredom) to spend on some new ones:
 

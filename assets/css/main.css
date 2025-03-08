@@ -1,4 +1,4 @@
-/* ~/assets/css/global.css */
+/* ~/assets/css/main.css */
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark-mode, .dark-mode *));
@@ -11,4 +11,9 @@
     ol{list-style: decimal; padding-left: 1rem;}
     ul{list-style: disclosure-closed; padding-left: 1rem;}
     li{padding-bottom: 0.5rem;}
+    a{color: var(--color-blue-500);}
 }
+
+.dark-mode a {
+    color: var(--color-teal-500);
+  }

@@ -1,6 +1,6 @@
-// ~/composables/siteSettingsService.ts
+// ~/plugins/siteSettings.ts
 
-import { ref, type Ref } from 'vue';
+import { ref, watch, type Ref } from 'vue';
 import { ToastEventBus } from 'primevue';
 
 type Settings = {
@@ -8,7 +8,9 @@ type Settings = {
   notificationInterval: number; // in seconds
 };
 
-export function useSiteSettings() {
+export default defineNuxtPlugin({
+  name: 'site-settings',
+  async setup() {
     const settings: Ref<Settings> = ref({
       notificationsOn: false,
       notificationInterval: 60 * 60, // 60 minutes
@@ -62,38 +64,54 @@ export function useSiteSettings() {
       { immediate: true }
     );
 
-    const siteSettingsService = {
-      settings,
-      // Getters
-      getNotificationsOn: (): Settings['notificationsOn'] => {
-        return settings.value.notificationsOn;
-      },
-      getNotificationInterval: (): Settings['notificationInterval'] => {
-        return settings.value.notificationInterval;
-      },
-      // use this in Vue components for reactivity
-      reactiveSettings: () => {
-        return settings;
-      },
-      // Setters
-      setNotificationsOn: (value: Settings['notificationsOn']): void => {
-        settings.value.notificationsOn = value;
-        saveSettings();
-      },
-      setNotificationInterval: (
-        value: Settings['notificationInterval']
-      ): void => {
-        settings.value.notificationInterval = value;
-        saveSettings();
-      },
-      setSetting: <K extends keyof Settings>(key: K, value: Settings[K]) => {
-        settings.value[key] = value;
-        saveSettings();
-      },
+    // Getters
+    const getNotificationsOn = (): Settings['notificationsOn'] => {
+      return settings.value.notificationsOn;
+    };
+
+    const getNotificationInterval = (): Settings['notificationInterval'] => {
+      return settings.value.notificationInterval;
+    };
+
+    // use this in Vue components for reactivity
+    const reactiveSettings = () => {
+      return settings;
+    };
+
+    // Setters
+    const setNotificationsOn = (value: Settings['notificationsOn']): void => {
+      settings.value.notificationsOn = value;
+      saveSettings();
+    };
+
+    const setNotificationInterval = (
+      value: Settings['notificationInterval']
+    ): void => {
+      settings.value.notificationInterval = value;
+      saveSettings();
+    };
+
+    const setSetting = <K extends keyof Settings>(
+      key: K,
+      value: Settings[K]
+    ) => {
+      settings.value[key] = value;
+      saveSettings();
     };
 
     return {
-      // necessary to make the plugin helpers available in other parts of the application, like notifications.client.ts
-      ...siteSettingsService,
+      // make the helper functions available to the entire Nuxt app
+      provide: {
+        siteSettings: {
+          settings,
+          setSetting,
+          getNotificationsOn,
+          getNotificationInterval,
+          reactiveSettings,
+          setNotificationsOn,
+          setNotificationInterval,
+        },
+      },
     };
-  };
+  },
+});

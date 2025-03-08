@@ -34,14 +34,14 @@
 <!-- TODO: add a cool progress bar to the bottom that counts down until the toast will disappear -->
 <script setup>
 import { ref } from 'vue';
-const siteSettings= useSiteSettings();
+const { $siteSettings } = useNuxtApp();
 
 const options = ref(['Off', 'On']);
 const doneLoading = ref(false);
 
 const notificationSelectValue = computed({
   get: () => {
-    return siteSettings.reactiveSettings().value.notificationsOn ? 'On' : 'Off';
+    return $siteSettings.reactiveSettings().value.notificationsOn ? 'On' : 'Off';
   },
 });
 
@@ -49,14 +49,14 @@ const onNotificationOnChange = (event) => {
   doneLoading.value = true;
   const newValue = event.value;
   if (newValue === 'On') {
-    siteSettings.setNotificationsOn(true);
+    $siteSettings.setNotificationsOn(true);
   }
   else if (newValue === 'Off') {
-    siteSettings.setNotificationsOn(false);
+    $siteSettings.setNotificationsOn(false);
   }
   else if (!newValue) {
-    const lastSetting = siteSettings.reactiveSettings().value.notificationsOn;
-    siteSettings.setNotificationsOn(!lastSetting);
+    const lastSetting = $siteSettings.reactiveSettings().value.notificationsOn;
+    $siteSettings.setNotificationsOn(!lastSetting);
   }
   else {
     throw new Error('Something went wrong while trying to set the notificationsOn setting.')
@@ -66,17 +66,17 @@ const onNotificationOnChange = (event) => {
 
 const notificationInputValue = computed({
   get: () => {
-    return siteSettings.reactiveSettings().value.notificationInterval / 60; // convert seconds to minutes
+    return $siteSettings.reactiveSettings().value.notificationInterval / 60; // convert seconds to minutes
   }
 });
 
 let debounceTimer;
 const onNotificationIntervalChange = (newValue) => {
-  if (newValue * 60 === siteSettings.getNotificationInterval()) return;
+  if (newValue * 60 === $siteSettings.getNotificationInterval()) return;
   clearTimeout(debounceTimer);
   doneLoading.value = true;
   debounceTimer = setTimeout(() => {
-    siteSettings.setNotificationInterval(newValue * 60); //convert minutes to seconds
+    $siteSettings.setNotificationInterval(newValue * 60); //convert minutes to seconds
     doneLoading.value = false;
   }, 500);
 };

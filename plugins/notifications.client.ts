@@ -1,15 +1,14 @@
 // ~/plugins/notifications.client.ts
-import { useSiteSettings } from '../composables/siteSettingsService';
 import { ToastEventBus } from 'primevue';
 import type { NotifierApiRequest } from 'server/api/notifier';
+import { watch } from 'vue';
 
+// this plugin is run sitewide so that it can always do stuff when siteSettings changes
 export default defineNuxtPlugin({
   name: 'notifications',
-  // dependsOn: ['site-settings'],
+  dependsOn: ['site-settings'],
   async setup() {
-    // const { $siteSettings } = useNuxtApp();
-    // const siteSettings = $siteSettings;
-    const siteSettings = useSiteSettings();
+    const { $siteSettings } = useNuxtApp();
     let serviceWorkerRegistration: ServiceWorkerRegistration;
 
     const handleNotificationsChange = async (notificationsOn: boolean) => {
@@ -75,7 +74,7 @@ export default defineNuxtPlugin({
               if (registration.active) {
                 registration.active.postMessage({
                   type: 'initialNotificationInterval',
-                  interval: siteSettings.getNotificationInterval(),
+                  interval: $siteSettings.getNotificationInterval(),
                 });
                 console.info(
                   '[notificationsService] service worker interval UPDATED'
@@ -86,22 +85,21 @@ export default defineNuxtPlugin({
                 );
               }
             });
-            
-          // send toast telling users to make sure to revoke notifications permissions
-          ToastEventBus.emit('add', {
-            severity: 'info',
-            summary: 'You have subscribed to notifications.',
-            detail:
-              "You can safely close this tab.",
-            life: 4000,
-          });
+
+            // send toast telling users to make sure to revoke notifications permissions
+            ToastEventBus.emit('add', {
+              severity: 'info',
+              summary: 'You have subscribed to notifications.',
+              detail: 'You can safely close this tab.',
+              life: 4000,
+            });
           } catch (error) {
             console.error(
               'received error when registering service worker: ',
               error
             );
             // set notificationsOn to false
-            siteSettings.setNotificationsOn(false);
+            $siteSettings.setNotificationsOn(false);
 
             // rethrow error to the next catch that adds a toast
             throw error;
@@ -114,8 +112,8 @@ export default defineNuxtPlugin({
               await registration.pushManager.getSubscription();
             if (subscription) {
               const requestBody: NotifierApiRequest = {
-                // @ts-expect-error the MDN PushSubscriptionJSON interface 
-                // has all its properties as optional, but they should always 
+                // @ts-expect-error the MDN PushSubscriptionJSON interface
+                // has all its properties as optional, but they should always
                 // be there since I am making them be there
                 subscription: subscription.toJSON(),
               };
@@ -132,7 +130,7 @@ export default defineNuxtPlugin({
                 body: JSON.stringify(requestBody),
               });
             } else {
-              throw new Error("You were not subscribed to notifications.");
+              throw new Error('You were not subscribed to notifications.');
             }
           } else {
             throw new Error('Service worker not ready.');
@@ -161,6 +159,7 @@ export default defineNuxtPlugin({
           severity: 'error',
           summary: 'Whoops',
           detail: error,
+          life: 4000,
         });
       }
     };
@@ -181,8 +180,8 @@ export default defineNuxtPlugin({
               await registration.pushManager.getSubscription();
             if (subscription) {
               const requestBody: NotifierApiRequest = {
-                // @ts-expect-error the MDN PushSubscriptionJSON interface 
-                // has all its properties as optional, but they should always 
+                // @ts-expect-error the MDN PushSubscriptionJSON interface
+                // has all its properties as optional, but they should always
                 // be there since I am making them be there
                 subscription: subscription.toJSON(),
                 interval: notificationInterval,
@@ -220,13 +219,13 @@ export default defineNuxtPlugin({
 
     // listen to the siteSettingsService for the settings.notificationsOn to be set to true
     watch(
-      () => siteSettings.getNotificationsOn(),
+      () => $siteSettings.getNotificationsOn(),
       (newValue) => handleNotificationsChange(newValue)
     );
 
     // listen to the siteSettingsService for the settings.notificationInterval to change
     watch(
-      () => siteSettings.getNotificationInterval(),
+      () => $siteSettings.getNotificationInterval(),
       (newValue) => handleNotificationIntervalChange(newValue)
     );
   },

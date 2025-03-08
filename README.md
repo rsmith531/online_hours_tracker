@@ -50,18 +50,19 @@ The orchestrator of all the bits and pieces that make up this project is [Nuxt](
 
 ### v1.0.0
 
-1. All the stuff I already did
-2. Fix website themes and styling.
+1. ✔️ All the stuff I already did
+2. ✔️ Fix website themes and styling.
 
 ### v1.1.0
 
-1. Fully type the project and correct type errors.
+1. ✔️ Fully type the project and correct type errors.
     - API endpoints through `zod`.
-    - Harness Nuxt and Vue TypeScript capabilities.
-2. Turn off Nuxt auto-imports.
-3. Write comprehensive test suites.
+    - ✔️ Harness Nuxt and Vue TypeScript capabilities.
+2. ✖️ Turn off Nuxt auto-imports.
+    - There is too much involved in this to make it viable for a personal project at this stage.
+3. Write comprehensive test suites (one day).
 4. Create a CI/CD pipeline.
-5. Replace the `web-push` library with Javascript built-ins
+5. ✔️ Upgrade the push notification to take you to the site when you click it.
 
 ### v1.2.0
 
@@ -89,3 +90,4 @@ The orchestrator of all the bits and pieces that make up this project is [Nuxt](
 - [Vue plugins vs. composables vs. stores](https://bigmachine.io/frontend/what-should-be-a-plugin-vs-a-composable-vs-a-store-in-nuxt)
 - [Good practices and Design Patterns for Vue Composables](https://dev.to/jacobandrewsky/good-practices-and-design-patterns-for-vue-composables-24lk)
 - [Common Push Notification Patterns](https://web.dev/articles/push-notifications-common-notification-patterns)
+- [A very cool 7-segment font](https://www.keshikan.net/fonts-e.html)

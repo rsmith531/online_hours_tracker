@@ -1,26 +1,37 @@
-<!-- NumberDisplay.vue -->
+<!-- ~/components/base/NumberDisplay.vue -->
 
 <template>
-  <p :style="{
-    border: '1px solid grey',
-    borderRadius: '0.5rem',
+  <div style="
+  position: relative; display: flex; justify-content: center;
+  " :style="{
     width: 'fit-content',
     maxWidth: 'calc(100%/8)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    textAlign: 'center',
-    transition: 'all 0.2s ease'
-  }" class="
-        text-3xl sm:text-8xl 
-        h-[4rem] sm:h-[8rem] 
-        p-[0.5rem] sm:p-[1rem]
+  }">
+    <p style="
+        width: min-content;" class="
+        text-5xl sm:text-8xl 
       ">
-    {{ isMounted ? number : '-' }}
-  </p>
+      {{ isMounted ? number : '-' }}
+    </p>
+    <p style="
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        user-select: none;
+        opacity: 0.15;
+        width: min-content;
+      " class="
+        text-5xl sm:text-8xl 
+      ">
+      8
+    </p>
+  </div>
 </template>
 
 <script setup>
+
 defineProps({
   number: {
     type: [Number, String],
@@ -32,4 +43,5 @@ const isMounted = ref(false);
 onMounted(() => {
   isMounted.value = true;
 });
+
 </script>

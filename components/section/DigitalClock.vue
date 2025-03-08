@@ -1,9 +1,13 @@
 <!-- ~/components/section/DigitalClock.vue -->
 
 <template>
-  <Panel toggleable :style="{borderRadius: '15px',
-      boxShadow: ` 0 0 6rem ${borderColor}`,
-      transition: 'all 0.7s ease-in-out',}" class="min-w-[21.25rem] sm:min-w-[53.5rem]">
+  <Panel toggleable :style="{
+    borderRadius: '15px',
+    boxShadow: ` 0 0 6rem ${borderColor}`,
+    transition: 'all 0.7s ease-in-out',
+  }" 
+  class="min-w-[21.75rem] sm:min-w-[37.625rem]"
+  >
     <template #header>
       <p class="
         text-2xl sm:text-4xl p-3">{{ fieldsetLegend }}</p>
@@ -15,42 +19,22 @@
       overflow: 'hidden',
       alignContent: 'center',
       justifyContent: 'center'
-    }">
-      <NumberDisplay :number="hoursTens" />
-      <NumberDisplay :number="hoursOnes" />
-      <p :style="{
-        width: 'fit-content',
-        maxWidth: 'calc(100%/8)',
-        display: 'flex',
-        alignItems: 'center'
-      }" class="
-        text-2xl sm:text-8xl 
-        h-[4rem] sm:h-[8rem] 
-        p-[0rem] sm:p-[1rem]
-      ">
-        :
-      </p>
-      <NumberDisplay :number="minutesTens" />
-      <NumberDisplay :number="minutesOnes" />
-      <p :style="{
-        width: 'fit-content',
-        maxWidth: 'calc(100%/8)',
-        display: 'flex',
-        alignItems: 'center'
-      }" class="
-        text-2xl sm:text-8xl 
-        h-[4rem] sm:h-[8rem] 
-        p-[0rem] sm:p-[1rem]
-      ">
-        :
-      </p>
-      <NumberDisplay :number="secondsTens" />
-      <NumberDisplay :number="secondsOnes" />
+    }" class="pt-[1.125rem]"
+    >
+      <NumberDisplay :number="hoursTens" class="clock_font" />
+      <NumberDisplay :number="hoursOnes" class="clock_font" />
+      <ColonDisplay :blink="isWorkdayOpen && !isWorkdayPaused" class="clock_font" />
+      <NumberDisplay :number="minutesTens" class="clock_font" />
+      <NumberDisplay :number="minutesOnes" class="clock_font" />
+      <ColonDisplay :blink="isWorkdayOpen && !isWorkdayPaused" class="clock_font" />
+      <NumberDisplay :number="secondsTens" class="clock_font" />
+      <NumberDisplay :number="secondsOnes" class="clock_font" />
     </div>
   </Panel>
 </template>
 
 <script setup>
+
 const props = defineProps({
   time: {
     type: Number,
@@ -70,21 +54,21 @@ const {
   isWorkdayOpen,
 } = useWorkday();
 const {
-    isPending,
-    isWorkdayNull,
-    isWorkdayPaused,
+  isPending,
+  isWorkdayNull,
+  isWorkdayPaused,
 } = useWorkday();
 
 const borderColor = computed(() => {
-    if (isPending.value || isWorkdayNull.value) return 'blue';
-    if (isWorkdayClosed.value) return 'red';
-    if (isWorkdayOpen.value) {
-        if (!isWorkdayPaused.value) {
-            return 'green';
-        }
-        return 'yellow';
+  if (isPending.value || isWorkdayNull.value) return 'blue';
+  if (isWorkdayClosed.value) return 'red';
+  if (isWorkdayOpen.value) {
+    if (!isWorkdayPaused.value) {
+      return 'green';
     }
-    return 'grey';
+    return 'yellow';
+  }
+  return 'grey';
 });
 
 const fieldsetLegend = computed(() => {
@@ -163,9 +147,10 @@ const secondsOnes = computed(() =>
 </script>
 
 <style scoped>
-div {
-  font-family: Doto, monospace;
-  font-weight: 700;
+.clock_font {
+  font-family: DSEG7 Classic, monospace;
+  font-weight: 500;
+  font-style: italic;
 }
 
 </style>

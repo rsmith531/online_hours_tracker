@@ -15,7 +15,7 @@ export default defineNuxtConfig({
     'nuxt-auth-utils',
     '@nuxtjs/color-mode',
     '@nuxt/image',
-    '@nuxt/test-utils/module'
+    '@nuxt/test-utils/module',
   ],
   typescript: {
     typeCheck: true,
@@ -59,7 +59,10 @@ export default defineNuxtConfig({
         monospace: ['Courier New'],
       },
     },
-    families: [{ name: 'Doto', weights: [400, 800, 900] }],
+    families: [
+      { name: 'Doto', weights: [400, 800, 900] },
+      { name: 'DSEG7 Classic', weights: [400, 800, 900] },
+    ],
   },
   hooks: {
     // make sure the VAPID public key gets injected into serviceWorker.ts at build time

@@ -15,6 +15,7 @@ export default defineNuxtConfig({
     'nuxt-auth-utils',
     '@nuxtjs/color-mode',
     '@nuxt/image',
+    '@nuxt/test-utils/module'
   ],
   typescript: {
     typeCheck: true,

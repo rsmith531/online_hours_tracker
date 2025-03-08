@@ -16,13 +16,16 @@ export default defineNuxtConfig({
     '@nuxtjs/color-mode',
     '@nuxt/image',
   ],
+  typescript: {
+    typeCheck: true,
+  },
   primevue: {
     options: {
       theme: {
         preset: Aura,
         options: {
-            darkModeSelector: '.dark-mode',
-        }
+          darkModeSelector: '.dark-mode',
+        },
       },
     },
   },

@@ -2,7 +2,7 @@
 
 import type { PushSubscription } from 'web-push';
 import webpush from 'web-push';
-import { ActivityType } from '~/composables/workdayService';
+import { ActivityType } from '../../composables/workdayService';
 
 // the list of subscribers to the push notifications
 const subscribers: {

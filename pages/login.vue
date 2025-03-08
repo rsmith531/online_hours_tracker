@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { useWorkday } from '~/composables/workdayService';
+import { useWorkday } from 'composables/workdayService';
 import { ref } from 'vue';
 
 // no layouts allowed on login page

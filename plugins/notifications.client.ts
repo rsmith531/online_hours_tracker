@@ -30,7 +30,7 @@ export default defineNuxtPlugin({
                 'This browser does not support push notifications.'
               );
             }
-            console.log(
+            console.info(
               '[notificationsService] browser compatibility check PASSED'
             );
 
@@ -115,7 +115,7 @@ export default defineNuxtPlugin({
                 subscription: subscription.toJSON(),
               };
 
-              console.log(
+              console.info(
                 '[notificationsService] sending requestBody to /api/notifier via DELETE: ',
                 requestBody
               );
@@ -180,7 +180,7 @@ export default defineNuxtPlugin({
                 interval: notificationInterval,
               };
 
-              console.log(
+              console.info(
                 '[notificationsService] sending requestBody to /api/notifier via PATCH: ',
                 requestBody
               );

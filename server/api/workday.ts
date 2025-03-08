@@ -9,8 +9,8 @@ import {
   getOpenSession,
   getLastClosedSession,
   getOpenSegment,
-} from '../utils/db';
-import { ActivityType } from '~/composables/workdayService';
+} from '../../utils/db';
+import { ActivityType } from '../../composables/workdayService';
 
 export interface WorkdayApiResponse {
   start_time: Date | null;

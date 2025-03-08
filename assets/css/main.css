@@ -1,0 +1,14 @@
+/* ~/assets/css/global.css */
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark-mode, .dark-mode *));
+@layer base {
+    h1{ font-size: var(--text-5xl); line-height: 2;}
+    h2{ font-size: var(--text-4xl); line-height: 2;}
+    h3{ font-size: var(--text-2xl); line-height: 2;}
+    h4{ font-size: var(--text-xl); line-height: 2;}
+    p{ font-size: var(--text-base); padding-bottom: 1rem;}
+    ol{list-style: decimal; padding-left: 1rem;}
+    ul{list-style: disclosure-closed; padding-left: 1rem;}
+    li{padding-bottom: 0.5rem;}
+}

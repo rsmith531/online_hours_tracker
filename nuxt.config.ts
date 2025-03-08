@@ -1,8 +1,9 @@
 // nuxt.config.ts
 
-import Aura from '@primevue/themes/aura';
+import Aura from '@primeuix/themes/aura';
 import fs from 'node:fs';
 import path from 'node:path';
+import tailwindcss from '@tailwindcss/vite';
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -11,17 +12,20 @@ export default defineNuxtConfig({
     '@primevue/nuxt-module',
     '@nuxt/fonts',
     'nuxt-security',
-    '@nuxtjs/tailwindcss',
     'nuxt-auth-utils',
+    '@nuxtjs/color-mode',
   ],
   primevue: {
     options: {
       theme: {
         preset: Aura,
+        options: {
+            darkModeSelector: '.dark-mode',
+        }
       },
     },
   },
-  vite: { assetsInclude: ['**/*.md'] },
+  vite: { plugins: [tailwindcss()], assetsInclude: ['**/*.md'] },
 
   components: [
     {
@@ -40,7 +44,7 @@ export default defineNuxtConfig({
       vapidPublicKey: process.env.NUXT_PUBLIC_VAPID_PUBLIC_KEY,
     },
   },
-  css: ['primeicons/primeicons.css'],
+  css: ['primeicons/primeicons.css', '~/assets/css/main.css'],
   fonts: {
     defaults: {
       fallbacks: {

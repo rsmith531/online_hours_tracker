@@ -16,5 +16,13 @@
         "database": "workday_data.sqlite",
         "name": "workday_data"
       }
-    ]
+    ],"tailwindCSS.experimental.classRegex": ["tw`(.*?)`", "tw\\('(.*?)'\\)", "tw\\(\\s*('(.*?)'|\"(.*?)\")\\s*\\)"],
+    "files.associations": 
+      {
+        "*.css": "tailwindcss"
+      },
+    "editor.quickSuggestions": 
+      {
+        "strings": true
+      }
   }

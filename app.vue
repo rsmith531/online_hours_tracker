@@ -8,6 +8,7 @@
   <VueQueryDevtools v-if="enableDevTools" />
 
   <AboutModal />
+  <DarkModeToggle />
 </template>
 
 <script setup lang="ts">

@@ -42,6 +42,36 @@ I augmented PrimeVue with [Tailwind](https://tailwindcss.com/) utility classes t
 
 The orchestrator of all the bits and pieces that make up this project is [Nuxt](https://nuxt.com/).
 
+## Roadmap
+
+### v1.0.0
+
+1. All the stuff I already did
+2. Fix website themes and styling.
+
+### v1.1.0
+
+1. Fully type the project and correct type errors.
+    - API endpoints through `zod`.
+    - Harness Nuxt and Vue TypeScript capabilities.
+2. Turn off Nuxt auto-imports.
+3. Write comprehensive test suites.
+4. Create a CI/CD pipeline.
+5. Replace the `web-push` library with Javascript built-ins
+
+### v1.2.0
+
+1. Workday Timeline feature.
+
+### v1.3.0
+
+1. Workday data editor.
+    - Implemented through the [PrimeVue DataTable component](https://primevue.org/datatable/)
+
+### v1.4.0
+
+1. Workday data dashboard.
+
 ### Resources
 
 - [How to use Primevue Toast outside of a component](https://stackoverflow.com/questions/72425297/vue-warn-inject-can-only-be-used-inside-setup-or-functional-components)

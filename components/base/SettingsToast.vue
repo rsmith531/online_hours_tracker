@@ -1,7 +1,7 @@
 <!-- ~/components/base/SettingsToast.vue -->
 
 <template>
-  <Toast id="settings-container"  position="top-center" group="settings-toast" :style="{width: 'fit-content'}">
+  <Toast id="settings-container"  position="bottom-center" group="settings-toast" :style="{width: 'max-content', bottom: '7%'}">
     <template #container="{ message, closeCallback }">
       <div class="
             p-[0.5rem] sm:p-[1rem]" :style="{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }">

@@ -1,9 +1,9 @@
-<!-- DigitalClock.vue -->
+<!-- ~/components/section/DigitalClock.vue -->
 
 <template>
   <Panel toggleable :style="{borderRadius: '15px',
       boxShadow: ` 0 0 6rem ${borderColor}`,
-      transition: 'all 0.7s ease-in-out',}" class="sm:min-w-[53.5rem]">
+      transition: 'all 0.7s ease-in-out',}" class="min-w-[21.25rem] sm:min-w-[53.5rem]">
     <template #header>
       <p class="
         text-2xl sm:text-4xl p-3">{{ fieldsetLegend }}</p>

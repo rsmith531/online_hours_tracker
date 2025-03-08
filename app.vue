@@ -7,8 +7,9 @@
   </NuxtLayout>
   <VueQueryDevtools v-if="enableDevTools" />
 
-  <AboutModal />
+  <FloatingLogo />
   <DarkModeToggle />
+  <AboutModal />
 </template>
 
 <script setup lang="ts">

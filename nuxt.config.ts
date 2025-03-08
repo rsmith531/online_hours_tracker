@@ -14,6 +14,7 @@ export default defineNuxtConfig({
     'nuxt-security',
     'nuxt-auth-utils',
     '@nuxtjs/color-mode',
+    '@nuxt/image',
   ],
   primevue: {
     options: {

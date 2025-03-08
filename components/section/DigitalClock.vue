@@ -5,6 +5,7 @@
     borderRadius: '15px',
     boxShadow: ` 0 0 6rem ${borderColor}`,
     transition: 'all 0.7s ease-in-out',
+    border: '2px solid'
   }" 
   class="min-w-[21.75rem] sm:min-w-[37.625rem]"
   >

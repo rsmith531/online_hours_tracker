@@ -12,7 +12,7 @@
         showDelay: 600,
         hideDelay: 300,
         autoHide: false,
-      }" rounded :icon="item.icon" severity="secondary" @click="toggleCallback" />
+      }" rounded :icon="item.icon" severity="contrast" @click="toggleCallback" />
     </template>
   </SpeedDial>
 </template>

@@ -9,7 +9,7 @@
         justifyContent: 'center',
         alignItems: 'center',
     }">
-        <Card style="width: 90%; overflow: hidden;">
+        <Card class="w-[90%] sm:w-fit">
 
             <template #title>Welcome to Workday Tracker!</template>
 

@@ -1,4 +1,5 @@
 // ~/plugins/notifications.client.ts
+
 import { ToastEventBus } from 'primevue';
 import type { NotifierApiRequest } from 'server/api/notifier';
 import { watch } from 'vue';
@@ -74,6 +75,7 @@ export default defineNuxtPlugin({
               if (registration.active) {
                 registration.active.postMessage({
                   type: 'initialNotificationInterval',
+                  // @ts-expect-error I'm calling this a Nuxt problem. I did what the docs described and it doesn't fix it
                   interval: $siteSettings.getNotificationInterval(),
                 });
                 console.info(
@@ -99,6 +101,7 @@ export default defineNuxtPlugin({
               error
             );
             // set notificationsOn to false
+                  // @ts-expect-error I'm calling this a Nuxt problem. I did what the docs described and it doesn't fix it
             $siteSettings.setNotificationsOn(false);
 
             // rethrow error to the next catch that adds a toast
@@ -219,12 +222,14 @@ export default defineNuxtPlugin({
 
     // listen to the siteSettingsService for the settings.notificationsOn to be set to true
     watch(
+      // @ts-expect-error I'm calling this a Nuxt problem. I did what the docs described and it doesn't fix it
       () => $siteSettings.getNotificationsOn(),
       (newValue) => handleNotificationsChange(newValue)
     );
 
     // listen to the siteSettingsService for the settings.notificationInterval to change
     watch(
+      // @ts-expect-error I'm calling this a Nuxt problem. I did what the docs described and it doesn't fix it
       () => $siteSettings.getNotificationInterval(),
       (newValue) => handleNotificationIntervalChange(newValue)
     );

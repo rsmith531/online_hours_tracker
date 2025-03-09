@@ -12,6 +12,7 @@ import {
   getSegmentsForSession,
 } from '../../utils/db';
 import { ActivityType } from '../../composables/workdayService';
+import { useIO } from '../plugins/socket';
 
 export interface WorkdayApiResponse {
   start_time: Date | null;
@@ -75,6 +76,9 @@ export default defineEventHandler(async (event) => {
     if (event.method === 'POST') {
       const body = await readBody(event);
 
+      // socket.io instance
+      const io = useIO();
+
       if (body) {
         let response: WorkdayApiResponse;
         // use provided timestamp, or the servers.
@@ -127,6 +131,8 @@ export default defineEventHandler(async (event) => {
               };
             }
 
+            // send a trigger to all the clients to refetch the workday data
+            io.emit('workdayUpdated', response);
             return response;
           }
 
@@ -179,6 +185,8 @@ export default defineEventHandler(async (event) => {
                 ),
               };
 
+              // send a trigger to all the clients to refetch the workday data
+              io.emit('workdayUpdated', response);
               return response;
             }
             return createError({

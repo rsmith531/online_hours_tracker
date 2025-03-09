@@ -4,9 +4,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import type { WorkdayApiResponse } from 'server/api/workday';
 import { computed } from 'vue';
 import { ToastEventBus } from 'primevue';
+import { useSocket } from './socket.client';
 
+// TODO: rsmith - see about making this either a singleton or a plugin if the performance gains warrant it. Right now it seems to have an instance for every time it is called throughout the app, since console logs within it print four times
 export function useWorkday() {
   const queryClient = useQueryClient();
+  // socket.io client
+  const socket = useSocket();
 
   const {
     data: workday,
@@ -55,6 +59,18 @@ export function useWorkday() {
       end_time: null,
       segments: undefined,
     },
+  });
+
+  onMounted(() => {
+    socket.on('workdayUpdated', (data: WorkDay) => {
+      queryClient.setQueryData(['workday_service'], data);
+      // refetch();
+    });
+  });
+
+  onUnmounted(() => {
+    socket.off('workdayUpdated');
+    // socket.disconnect();
   });
 
   const { mutate: updateWorkday } = useMutation<WorkDay, Error>({

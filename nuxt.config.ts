@@ -31,6 +31,11 @@ export default defineNuxtConfig({
       },
     },
   },
+  nitro: {
+    experimental: {
+      websocket: true,
+    },
+  },
   vite: { plugins: [tailwindcss()], assetsInclude: ['**/*.md'] },
   components: [
     {

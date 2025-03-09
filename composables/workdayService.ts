@@ -6,8 +6,11 @@ import { computed } from 'vue';
 import { ToastEventBus } from 'primevue';
 import { useSocket } from './socket.client';
 
+// Singleton instance
+let workdayInstance: ReturnType<typeof createWorkdayService>;
+
 // TODO: rsmith - see about making this either a singleton or a plugin if the performance gains warrant it. Right now it seems to have an instance for every time it is called throughout the app, since console logs within it print four times
-export function useWorkday() {
+function createWorkdayService() {
   const queryClient = useQueryClient();
   // socket.io client
   const socket = useSocket();
@@ -233,6 +236,28 @@ export function useWorkday() {
     isWorkdayPaused,
   };
 }
+
+export function useWorkday() {
+  if (!workdayInstance) {
+    workdayInstance = createWorkdayService();
+  }
+  
+  // Initialize socket handlers if this is the first instance
+  // if (!workdayInstance.initialized) {
+  //   workdayInstance.socketHandlers.init();
+  //   workdayInstance.initialized = true;
+  // }
+
+  return workdayInstance;
+}
+
+// Cleanup hook
+// export function cleanupWorkdayService() {
+//   if (workdayInstance) {
+//     workdayInstance.socketHandlers.cleanup();
+//     workdayInstance = undefined;
+//   }
+// }
 
 export interface WorkDay {
   start_time: Date | null;

@@ -1,6 +1,6 @@
 # Preparing the development environment
 
-1. Clone the repo: `git clone https://github.com/rsmith531/online_hours_tracker.git`
+1. Clone the repo: `git clone git@github.com:rsmith531/online_hours_tracker.git .`
 
 2. Install dependencies: `npm i`
 
@@ -52,6 +52,12 @@
 - [ ] write test suites
 
 # Deployment
+
+tl,dr to update to the latest commit:
+```bash
+eval `ssh-agent -s` && ssh-add ~/projects/workday_tracker/git_ssh_key && git pull && npm run build && pm2 restart ecosystem.config.cjs || echo "One or more commands failed."
+```
+
 1. Using PuTTY or another SSH client, tunnel into the hosted VPS.
 
 2. Check to make sure Caddy is running.
@@ -80,11 +86,149 @@
    ```bash
    git pull
    ```
-6. Build the project.
+
+6. If there are new packages in the project, install them.
+    ```bash
+    npm i
+    ```
+
+7. Build the project.
     ```bash
     npm run build
     ```
-7. Run the server via `pm2`.
+8. Run the server via `pm2`.
     ```bash
     pm2 restart ecosystem.config.cjs
     ```
+
+
+
+## Adding a new instance
+
+### Creating the new instance
+
+1. Create a new directory in `~/projects/workday_tracker/`, for example `mkdir 02_demo_instance`.
+
+2. [Clone the repo](#L3).
+
+3. Create and [configure](#L9) a `.env` file.
+    - Set `NUXT_PUBLIC_ENVIRONMENT` to `production`.
+
+4. Follow the [remaining deployment steps](#L90).
+
+### Reconfiguring Caddy
+
+Here's an example Caddyfile: 
+
+```bash
+# Caddyfile
+
+roamers.rest, *.roamers.rest {
+        handle {
+                @demoHost host demo.roamers.rest
+                handle @demoHost {
+                        reverse_proxy :3000
+                }
+
+                @lupineHost host lupine.roamers.rest
+                handle @lupineHost {
+                        reverse_proxy :3001
+                }
+
+                @wwwHost host www.roamers.rest
+                handle @wwwHost {
+                        reverse_proxy :3000
+                }
+
+                @defaultHost host roamers.rest
+                handle @defaultHost {
+                        reverse_proxy :3000
+                }
+
+                # Any other subdomain is aborted here.
+                abort
+        }
+
+        handle_path /socket.io/* {
+                @demoSocket host demo.roamers.rest
+                handle @demoSocket {
+                        reverse_proxy :3000
+                }
+
+                @lupineSocket host lupine.roamers.rest
+                handle @lupineSocket {
+                        reverse_proxy :3001
+                }
+
+                @wwwSocket host www.roamers.rest
+                handle @wwwSocket {
+                        reverse_proxy :3000
+                }
+
+                @defaultSocket host roamers.rest
+                handle @defaultSocket {
+                        reverse_proxy :3000
+                }
+
+                # Any other subdomain is aborted here.
+                abort
+        }
+}
+
+```
+
+The file lives at `~/Caddyfile`, in the `root` directory of the VPS.
+
+1. Add a case to the `handle` and `handle_path` switches for the new subdomain.
+
+2. Run `caddy fmt --overwrite` to make sure the new file is formatted correctly.
+
+3. Run `caddy adapt` to convert the file to Caddy's native JSON format.
+
+3. Run `caddy reload` to reload Caddy.
+
+### Reconfiguring pm2
+
+Here's an example pm2 ecosytem config file: 
+
+```javascript
+// ~/ecosystem.config.cjs
+
+module.exports = {
+    apps: [
+        {
+            name: 'demo_workday_tracker',
+            port: '3000',
+            exec_mode: 'cluster',
+            instances: 'max',
+            script: '02_demo_instance/.output/server/index.mjs',
+            error_file: '02_demo_instance/logs/error.log',
+            out_file: '02_demo_instance/logs/output.log',
+            merge_logs: true,
+            autorestart: true
+        },
+        {
+            name: 'lupine_workday_tracker',
+            port: '3001',
+            exec_mode: 'cluster',
+            instances: 'max',
+            script: '01_my_instance/.output/server/index.mjs',
+            error_file: '01_my_instance/logs/error.log',
+            out_file: '01_my_instance/logs/output.log',
+            merge_logs: true,
+            autorestart: true
+        }
+    ]
+}
+```
+
+The file lives at `~/projects/workday_tracker/ecosystem.config.cjs`.
+
+1. Add a new app object to the array with a unique `name`.
+
+2. Set the port to an available port.
+
+3. Change the script to the Nuxt build output in the new instance directory.
+
+4. Update the log file paths.
+

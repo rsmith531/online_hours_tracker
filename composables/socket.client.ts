@@ -18,6 +18,24 @@ export function useSocket() {
       // https://socket.io/docs/v4/pm2/
       transports: ['websocket'],
     });
+
+    // Handle disconnections
+    socketInstance.value.on('disconnect', () => {
+      console.log('[socket] disconnected');
+    });
+
+    // Handle reconnections
+    socketInstance.value.on('reconnect', () => {
+      console.log('[socket] reconnected');
+    });
+    
+    socketInstance.value.on('connect_error', (error) => {
+      console.error('[socket] connection error: ', error);
+    });
+    
+    socketInstance.value.on('connect_timeout', (timeout) => {
+      console.error('[socket] connection timeout: ', timeout);
+    });
   } else {
     console.log(
       `[useSocket] already connected to socket with id ${socketInstance.value.id}`

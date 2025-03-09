@@ -241,23 +241,8 @@ export function useWorkday() {
   if (!workdayInstance) {
     workdayInstance = createWorkdayService();
   }
-  
-  // Initialize socket handlers if this is the first instance
-  // if (!workdayInstance.initialized) {
-  //   workdayInstance.socketHandlers.init();
-  //   workdayInstance.initialized = true;
-  // }
-
   return workdayInstance;
 }
-
-// Cleanup hook
-// export function cleanupWorkdayService() {
-//   if (workdayInstance) {
-//     workdayInstance.socketHandlers.cleanup();
-//     workdayInstance = undefined;
-//   }
-// }
 
 export interface WorkDay {
   start_time: Date | null;

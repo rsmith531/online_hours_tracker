@@ -1,3 +1,5 @@
+// ~/ecosystem.confid.cjs
+
 module.exports = {
     apps: [
       {
@@ -5,7 +7,11 @@ module.exports = {
         port: '3000',
         exec_mode: 'cluster',
         instances: 'max',
-        script: './.output/server/index.mjs'
+        script: './.output/server/index.mjs',
+        error_file: './logs/error.log',
+        out_file: './logs/output.log',
+        merge_logs: true,
+        autorestart: true
       }
     ]
   }

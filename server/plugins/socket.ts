@@ -9,19 +9,20 @@ import { createServer } from 'node:http';
 import { createAdapter } from '@socket.io/cluster-adapter';
 import { setupWorker } from '@socket.io/sticky';
 
-let io: Server;
+const httpServer = createServer();
+
+const io = new Server(httpServer);
+
+// @ts-expect-error I hate socket.io
+// allow socket packets to be broadcast to all clients regardless of node they are connected to
+io.adapter(createAdapter());
+
+// enable sticky sessions so that requests from a client always go back to the original node it opened a socket with
+setupWorker(io);
 
 export default defineNitroPlugin((nitroApp: NitroApp) => {
   try {
     const engine = new Engine();
-    const httpServer = createServer();
-    io = new Server(httpServer);
-
-    // if (not on localhost) {
-    //   // @ts-expect-error I hate socket.io
-    //   io.adapter(createAdapter());
-    //   setupWorker(io);
-    // }
     io.bind(engine);
 
     io.on('connection', (socket) => {

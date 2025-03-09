@@ -46,6 +46,10 @@ I augmented PrimeVue with [Tailwind](https://tailwindcss.com/) utility classes t
 
 The orchestrator of all the bits and pieces that make up this project is [Nuxt](https://nuxt.com/).
 
+#### Project management
+
+This one goes out to my buds [node.js](https://nodejs.org/en) and [npm](https://www.npmjs.com/), the unsung heroes that make programming in Javascript a team sport. When one person writes great software, all it takes is a quick `npm i` and we all benefit from it.
+
 ## Roadmap
 
 ### v1.0.0

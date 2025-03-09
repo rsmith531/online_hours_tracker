@@ -63,12 +63,14 @@ export function useWorkday() {
 
   onMounted(() => {
     socket.on('workdayUpdated', (data: WorkDay) => {
+      console.log('[workdayService] receiving updated data: ', data)
       queryClient.setQueryData(['workday_service'], data);
       // refetch();
     });
   });
 
   onUnmounted(() => {
+    console.log('[workdayService] disconnecting from socket')
     socket.off('workdayUpdated');
     // socket.disconnect();
   });

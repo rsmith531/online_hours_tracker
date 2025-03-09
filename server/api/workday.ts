@@ -78,6 +78,7 @@ export default defineEventHandler(async (event) => {
 
       // socket.io instance
       const io = useIO();
+      console.log('[api/workday] socket listeners: ', (await io.fetchSockets()).map((socket) => {return socket.id}))
 
       if (body) {
         let response: WorkdayApiResponse;

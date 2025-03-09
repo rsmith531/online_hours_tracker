@@ -9,15 +9,18 @@ const socketInstance = ref<Socket>();
 export function useSocket() {
   if (!socketInstance.value) {
     const url = useRequestURL().origin;
-    console.log(`[useSocket] creating socket at ${url}`)
-    socketInstance.value = io(
-      url,
-      {
-        // Enable automatic reconnection
-        reconnection: true,
-        // Try WebSocket first, fallback to polling if needed
-        transports: ['websocket', 'polling'],
-      }
+    console.log(`[useSocket] connecting to socket at ${url}`);
+    socketInstance.value = io(url, {
+      // Enable automatic reconnection
+      reconnection: true,
+
+      // can't use http long-polling with pm2
+      // https://socket.io/docs/v4/pm2/
+      transports: ['websocket'],
+    });
+  } else {
+    console.log(
+      `[useSocket] already connected to socket with id ${socketInstance.value.id}`
     );
   }
 

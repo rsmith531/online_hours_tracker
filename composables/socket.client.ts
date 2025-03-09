@@ -8,8 +8,10 @@ const socketInstance = ref<Socket>();
 
 export function useSocket() {
   if (!socketInstance.value) {
+    const url = useRequestURL().origin;
+    console.log(`[useSocket] creating socket at ${url}`)
     socketInstance.value = io(
-      import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000',
+      url,
       {
         // Enable automatic reconnection
         reconnection: true,

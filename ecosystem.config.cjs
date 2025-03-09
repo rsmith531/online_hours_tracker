@@ -1,4 +1,4 @@
-// ~/ecosystem.confid.cjs
+// ~/ecosystem.config.cjs
 
 module.exports = {
     apps: [

@@ -133,6 +133,11 @@
       "bracketSpacing": true
     }
   },
+  "css": {
+    "formatter": {
+      "enabled": true
+    }
+  },
   "overrides": [
     {
       "include": ["*.vue"],

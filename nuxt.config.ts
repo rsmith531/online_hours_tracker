@@ -20,6 +20,9 @@ export default defineNuxtConfig({
   typescript: {
     typeCheck: true,
   },
+  features: {
+    devLogs: false, // Enable development logging in production
+  },
   primevue: {
     options: {
       theme: {

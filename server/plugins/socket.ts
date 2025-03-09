@@ -9,16 +9,25 @@ import { createServer } from 'node:http';
 import { createAdapter } from '@socket.io/cluster-adapter';
 import { setupWorker } from '@socket.io/sticky';
 
-const httpServer = createServer();
+const runtime = useRuntimeConfig();
 
-const io = new Server(httpServer);
+let io: Server;
 
-// @ts-expect-error I hate socket.io
-// allow socket packets to be broadcast to all clients regardless of node they are connected to
-io.adapter(createAdapter());
+if (runtime.public.environment !== 'development') {
+  // configure the socket to work with pm2 in prod
+  const httpServer = createServer();
+  io = new Server(httpServer);
 
-// enable sticky sessions so that requests from a client always go back to the original node it opened a socket with
-setupWorker(io);
+  // @ts-expect-error I hate socket.io
+  // allow socket packets to be broadcast to all clients regardless of node they are connected to
+  io.adapter(createAdapter());
+
+  // enable sticky sessions so that requests from a client always go back to the original node it opened a socket with
+  setupWorker(io);
+} else {
+  // configure the socket to work in dev
+  io = new Server();
+}
 
 export default defineNitroPlugin((nitroApp: NitroApp) => {
   try {

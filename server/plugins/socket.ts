@@ -14,19 +14,39 @@ const runtime = useRuntimeConfig();
 let io: Server;
 
 if (runtime.public.environment !== 'development') {
-  // configure the socket to work with pm2 in prod
-  const httpServer = createServer();
-  io = new Server(httpServer);
+  try {
+    console.log(
+      `[socket] runtime environment was ${runtime.public.environment}, configuring socket for prod.`
+    );
+    // configure the socket to work with pm2 in prod
+    const httpServer = createServer();
+    io = new Server(httpServer);
 
-  // @ts-expect-error I hate socket.io
-  // allow socket packets to be broadcast to all clients regardless of node they are connected to
-  io.adapter(createAdapter());
+    // @ts-expect-error I hate socket.io
+    // allow socket packets to be broadcast to all clients regardless of node they are connected to
+    io.adapter(createAdapter());
 
-  // enable sticky sessions so that requests from a client always go back to the original node it opened a socket with
-  setupWorker(io);
+    // enable sticky sessions so that requests from a client always go back to the original node it opened a socket with
+    setupWorker(io);
+  } catch (error) {
+    console.error(
+      '[socket] encountered an error while configuring for prod: ',
+      error
+    );
+  }
 } else {
-  // configure the socket to work in dev
-  io = new Server();
+  try {
+    console.log(
+      `[socket] runtime environment was ${runtime.public.environment}, configuring socket for development.`
+    );
+    // configure the socket to work in dev
+    io = new Server();
+  } catch (error) {
+    console.error(
+      '[socket] encountered an error while configuring for dev: ',
+      error
+    );
+  }
 }
 
 export default defineNitroPlugin((nitroApp: NitroApp) => {
@@ -43,7 +63,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
     });
 
     io.engine.on('connection_error', (err) => {
-      console.log('[socket] server encountered an error');
+      console.error('[socket] server encountered an error');
       console.log(err.req); // the request object
       console.log(err.code); // the error code, for example 1
       console.log(err.message); // the error message, for example "Session ID unknown"

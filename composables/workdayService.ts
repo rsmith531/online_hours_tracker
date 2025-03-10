@@ -14,7 +14,7 @@ function createWorkdayService() {
 
   // socket.io client
   const socket = useSocket();
-
+  console.log(`[workdayService] instantiated socket with id: ${socket.id}`);
   // logged in status of user
   const { loggedIn } = useUserSession();
 
@@ -70,17 +70,37 @@ function createWorkdayService() {
   });
 
   onMounted(() => {
-    socket.on('workdayUpdated', (data: WorkDay) => {
-      console.log('[workdayService] receiving updated data: ', data);
-      queryClient.setQueryData(['workday_service'], data);
-      // refetch();
-    });
+    try {
+      console.log(
+        `[workdayService] mounted, opening socket listener for id ${socket.id}`
+      );
+      socket.on('workdayUpdated', (data: WorkDay) => {
+        console.log('[workdayService] receiving updated data: ', data);
+        queryClient.setQueryData(['workday_service'], data);
+        // refetch();
+      });
+    } catch (error) {
+      console.error(
+        '[workdayService] encountered an error while listening for socket updates: ',
+        error
+      );
+    }
   });
 
   onUnmounted(() => {
-    console.log('[workdayService] disconnecting from socket');
-    socket.off('workdayUpdated');
-    // socket.disconnect();
+    try {
+      console.log('[workdayService] disconnecting from socket');
+      socket.off('workdayUpdated');
+      console.log(
+        `[workdayService] socket connection is now ${socket.disconnected === true ? 'disconnected' : 'connected'}.`
+      );
+      // socket.disconnect();
+    } catch (error) {
+      console.error(
+        '[workdayService] encountered an error while disconnecting from socket: ',
+        error
+      );
+    }
   });
 
   const { mutate: updateWorkday } = useMutation<WorkDay, Error>({

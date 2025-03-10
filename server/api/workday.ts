@@ -78,7 +78,12 @@ export default defineEventHandler(async (event) => {
 
       // socket.io instance
       const io = useIO();
-      console.log('[api/workday] socket listeners: ', (await io.fetchSockets())?.map((socket) => {return socket.id}))
+      console.log(
+        '[api/workday] socket listeners: ',
+        (await io.fetchSockets())?.map((socket) => {
+          return socket.id;
+        })
+      );
 
       if (body) {
         let response: WorkdayApiResponse;
@@ -131,9 +136,21 @@ export default defineEventHandler(async (event) => {
                 ],
               };
             }
-
-            // send a trigger to all the clients to refetch the workday data
-            io.emit('workdayUpdated', response);
+            try {
+              // send a trigger to all the clients to refetch the workday data
+              console.log(
+                '[api/workday] start/stop event: sending updated data signal to socket listeners: ',
+                (await io.fetchSockets())?.map((socket) => {
+                  return socket.id;
+                })
+              );
+              io.emit('workdayUpdated', response);
+            } catch (error) {
+              console.error(
+                '[api/workday] start/stop event: error sending update over socket connection: ',
+                error
+              );
+            }
             return response;
           }
 
@@ -187,7 +204,20 @@ export default defineEventHandler(async (event) => {
               };
 
               // send a trigger to all the clients to refetch the workday data
-              io.emit('workdayUpdated', response);
+              try {
+                console.log(
+                  '[api/workday] pause event: sending updated data signal to socket listeners: ',
+                  (await io.fetchSockets())?.map((socket) => {
+                    return socket.id;
+                  })
+                );
+                io.emit('workdayUpdated', response);
+              } catch (error) {
+                console.error(
+                  '[api/workday] pause event: error sending update over socket connection: ',
+                  error
+                );
+              }
               return response;
             }
             return createError({

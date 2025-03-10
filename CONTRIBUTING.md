@@ -123,6 +123,14 @@ Here's an example Caddyfile:
 ```bash
 # Caddyfile
 
+# globally
+{
+        acme_dns porkbun {
+                        api_key PORKBUN_KEY_HERE
+                        api_secret_key PORKBUN_SECRET_KEY_HERE
+        }
+}
+
 roamers.rest, *.roamers.rest {
         handle {
                 @demoHost host demo.roamers.rest
@@ -182,6 +190,8 @@ The file lives at `~/Caddyfile`, in the `root` directory of the VPS.
 1. Add a case to the `handle` and `handle_path` switches for the new subdomain.
 
 2. Run `caddy fmt --overwrite` to make sure the new file is formatted correctly.
+
+2. Run `caddy validate`? I dunno, I'm grasping at straws.
 
 3. Run `caddy adapt` to convert the file to Caddy's native JSON format.
 

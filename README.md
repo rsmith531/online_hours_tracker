@@ -185,6 +185,7 @@ This document you are viewing right now is actually [my project's README.md](htt
 - [Good practices and Design Patterns for Vue Composables](https://dev.to/jacobandrewsky/good-practices-and-design-patterns-for-vue-composables-24lk)
 - [Common push notification patterns](https://web.dev/articles/push-notifications-common-notification-patterns)
 - [A very cool 7-segment font](https://www.keshikan.net/fonts-e.html)
+- [How to install DNS provider modules in Caddy 2](https://caddy.community/t/how-to-use-dns-provider-modules-in-caddy-2/8148)
 - Literally every doc for any library I used
 - Google's [Gemini](https://gemini.google.com/) and Phind's [70b](https://www.phind.com/) AIs (I won't hide it)
 - My friend, [M***h](https://mitch.website/)

@@ -54,8 +54,23 @@
 # Deployment
 
 tl,dr to update to the latest commit:
+
 ```bash
-eval `ssh-agent -s` && ssh-add ~/projects/workday_tracker/git_ssh_key && git pull && npm run build && pm2 restart ecosystem.config.cjs || echo "One or more commands failed."
+eval `ssh-agent -s` && ssh-add ~/projects/workday_tracker/git_ssh_key && cd ~/projects/workday_tracker/01_my_instance && git pull && npm run build && pm2 restart ../ecosystem.config.cjs || echo "One or more commands failed."
+```
+
+or, if your SSH agent is already configured:
+
+```bash
+# for my instance
+
+cd ~/projects/workday_tracker/01_my_instance && git pull && npm run build && pm2 restart ../ecosystem.config.cjs || echo "One or more commands failed."
+```
+
+```bash
+# for demo instance
+
+cd ~/projects/workday_tracker/02_demo_instance && git pull && npm run build && pm2 restart ../ecosystem.config.cjs || echo "One or more commands failed."
 ```
 
 1. Using PuTTY or another SSH client, tunnel into the hosted VPS.

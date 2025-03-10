@@ -74,7 +74,7 @@ async function login() {
             // Refresh the session on client-side and redirect to the home page
             await refreshSession()
             // refetch the workday data
-            refetchWorkday();
+            await refetchWorkday();
             await navigateTo('/')
         })
         .catch(() => { alert('Bad credentials') })

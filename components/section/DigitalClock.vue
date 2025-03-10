@@ -53,8 +53,6 @@ const { user } = useUserSession();
 const {
   isWorkdayClosed,
   isWorkdayOpen,
-} = useWorkday();
-const {
   isPending,
   isWorkdayNull,
   isWorkdayPaused,

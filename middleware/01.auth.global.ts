@@ -2,10 +2,6 @@
 
 // https://nuxt.com/docs/guide/recipes/sessions-and-authentication#protect-app-routes
 export default defineNuxtRouteMiddleware((to) => {
-  // skip middleware on server
-  if (import.meta.server) {
-    return;
-  }
 
   const { loggedIn } = useUserSession();
 

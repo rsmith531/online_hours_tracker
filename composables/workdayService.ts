@@ -9,11 +9,14 @@ import { useSocket } from './socket.client';
 // Singleton instance
 let workdayInstance: ReturnType<typeof createWorkdayService>;
 
-// TODO: rsmith - see about making this either a singleton or a plugin if the performance gains warrant it. Right now it seems to have an instance for every time it is called throughout the app, since console logs within it print four times
 function createWorkdayService() {
   const queryClient = useQueryClient();
+
   // socket.io client
   const socket = useSocket();
+
+  // logged in status of user
+  const { loggedIn } = useUserSession();
 
   const {
     data: workday,
@@ -55,6 +58,8 @@ function createWorkdayService() {
         throw error;
       }
     },
+    // disabled when user is not logged in or when in server environment
+    enabled: !import.meta.server && loggedIn.value,
     // refetch to make sure the stopwatch doesn't get too far out of sync
     refetchInterval: 1000 * 60 * 5, // 5 minutes
     placeholderData: {
@@ -66,14 +71,14 @@ function createWorkdayService() {
 
   onMounted(() => {
     socket.on('workdayUpdated', (data: WorkDay) => {
-      console.log('[workdayService] receiving updated data: ', data)
+      console.log('[workdayService] receiving updated data: ', data);
       queryClient.setQueryData(['workday_service'], data);
       // refetch();
     });
   });
 
   onUnmounted(() => {
-    console.log('[workdayService] disconnecting from socket')
+    console.log('[workdayService] disconnecting from socket');
     socket.off('workdayUpdated');
     // socket.disconnect();
   });

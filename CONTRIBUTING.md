@@ -138,64 +138,12 @@ Here's an example Caddyfile:
 ```bash
 # Caddyfile
 
-# globally
-{
-        acme_dns porkbun {
-                        api_key PORKBUN_KEY_HERE
-                        api_secret_key PORKBUN_SECRET_KEY_HERE
-        }
+demo.roamers.rest, www.roamers.rest, roamers.rest {
+    reverse_proxy :3000
 }
 
-roamers.rest, *.roamers.rest {
-        handle {
-                @demoHost host demo.roamers.rest
-                handle @demoHost {
-                        reverse_proxy :3000
-                }
-
-                @lupineHost host lupine.roamers.rest
-                handle @lupineHost {
-                        reverse_proxy :3001
-                }
-
-                @wwwHost host www.roamers.rest
-                handle @wwwHost {
-                        reverse_proxy :3000
-                }
-
-                @defaultHost host roamers.rest
-                handle @defaultHost {
-                        reverse_proxy :3000
-                }
-
-                # Any other subdomain is aborted here.
-                abort
-        }
-
-        handle_path /socket.io/* {
-                @demoSocket host demo.roamers.rest
-                handle @demoSocket {
-                        reverse_proxy :3000
-                }
-
-                @lupineSocket host lupine.roamers.rest
-                handle @lupineSocket {
-                        reverse_proxy :3001
-                }
-
-                @wwwSocket host www.roamers.rest
-                handle @wwwSocket {
-                        reverse_proxy :3000
-                }
-
-                @defaultSocket host roamers.rest
-                handle @defaultSocket {
-                        reverse_proxy :3000
-                }
-
-                # Any other subdomain is aborted here.
-                abort
-        }
+lupine.roamers.rest {
+    reverse_proxy :3001
 }
 
 ```
@@ -206,11 +154,9 @@ The file lives at `~/Caddyfile`, in the `root` directory of the VPS.
 
 2. Run `caddy fmt --overwrite` to make sure the new file is formatted correctly.
 
-2. Run `caddy validate`? I dunno, I'm grasping at straws.
+3. Run `caddy validate`.
 
-3. Run `caddy adapt` to convert the file to Caddy's native JSON format.
-
-3. Run `caddy reload` to reload Caddy.
+4. Run `caddy reload` to reload Caddy.
 
 ### Reconfiguring pm2
 

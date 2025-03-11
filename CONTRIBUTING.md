@@ -146,6 +146,10 @@ lupine.roamers.rest {
     reverse_proxy :3001
 }
 
+test.roamers.rest {
+    reverse_proxy :3002
+}
+
 ```
 
 The file lives at `~/Caddyfile`, in the `root` directory of the VPS.
@@ -186,6 +190,17 @@ module.exports = {
             script: '01_my_instance/.output/server/index.mjs',
             error_file: '01_my_instance/logs/error.log',
             out_file: '01_my_instance/logs/output.log',
+            merge_logs: true,
+            autorestart: true
+        },
+        {
+            name: 'test_workday_tracker',
+            port: '3002',
+            exec_mode: 'cluster',
+            instances: 'max',
+            script: '03_test_instance/.output/server/index.mjs',
+            error_file: '03_test_instance/logs/error.log',
+            out_file: '03_test_instance/logs/output.log',
             merge_logs: true,
             autorestart: true
         }

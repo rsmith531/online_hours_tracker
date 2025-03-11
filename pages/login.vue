@@ -56,14 +56,17 @@ definePageMeta({
     layout: false
 })
 
+console.log(`[/login] page rendered on ${import.meta.server === true ? 'server' : import.meta.client === true ? 'client' : 'neither server nor client, apparently'}.`)
+
 const loading = ref(false);
 
-const { fetch: refreshSession } = useUserSession()
-const { refetch: refetchWorkday } = useWorkday();
+const { fetch: refreshSession } = useUserSession();
+
 const credentials = reactive({
     email: '',
     password: '',
 })
+
 async function login() {
     loading.value = true;
     $fetch('/api/login', {
@@ -74,10 +77,11 @@ async function login() {
             // Refresh the session on client-side and redirect to the home page
             await refreshSession()
             // refetch the workday data
-            await refetchWorkday();
+            // const { refetch: refetchWorkday } = useWorkday();
+            // await refetchWorkday();
             await navigateTo('/')
         })
-        .catch(() => { alert('Bad credentials') })
+        .catch((error) => { console.error('[/login] error while logging in: ', error); alert('Bad credentials') })
     loading.value = false;
 }
 </script>

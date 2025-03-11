@@ -36,6 +36,8 @@ export default defineNuxtPlugin({
               '[notificationsService] browser compatibility check PASSED'
             );
 
+            console.log(`[notifications] browser's notifications set to ${Notification.permission}`)
+
             // next, check if notifications permissions have been granted
             switch (Notification.permission) {
               case 'granted': {

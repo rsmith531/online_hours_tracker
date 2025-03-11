@@ -12,11 +12,21 @@ let workdayInstance: ReturnType<typeof createWorkdayService>;
 function createWorkdayService() {
   const queryClient = useQueryClient();
 
-  // socket.io client
-  const socket = useSocket();
-  console.log(`[workdayService] instantiated socket with id: ${socket.id}`);
   // logged in status of user
   const { loggedIn } = useUserSession();
+  console.log(`[workdayService] service instantiated when user was logged ${loggedIn === true ? 'in' : 'out'}.`)
+
+  // Refetch the data when the user logs in so that the page will have a fresh copy to render with
+  watch(
+    () => loggedIn.value,
+    (newValue) => {
+      if (newValue === true) {
+        console.log('[workdayService] loggedIn changed to true, refetching data.');
+        refetch();
+      }
+    },
+    { immediate: false } // Do not run on initial setup
+  );
 
   const {
     data: workday,
@@ -30,6 +40,7 @@ function createWorkdayService() {
       try {
         let parsedResponse: WorkDay;
         if (import.meta.server) {
+          console.log('[workdayService] running queryFn on server');
           const response = await useFetch<WorkdayApiResponse>('/api/workday');
           parsedResponse = {
             start_time: response.data.value?.start_time
@@ -43,6 +54,7 @@ function createWorkdayService() {
               : undefined,
           };
         } else {
+          console.log('[workdayService] running queryFn on client');
           const response = await $fetch<WorkdayApiResponse>('/api/workday');
           parsedResponse = {
             start_time: response.start_time
@@ -59,7 +71,9 @@ function createWorkdayService() {
       }
     },
     // disabled when user is not logged in or when in server environment
-    enabled: !import.meta.server && loggedIn.value,
+    // enabled: !import.meta.server && loggedIn,
+    // enabled: loggedIn,
+    enabled: !import.meta.server,
     // refetch to make sure the stopwatch doesn't get too far out of sync
     refetchInterval: 1000 * 60 * 5, // 5 minutes
     placeholderData: {
@@ -87,6 +101,10 @@ function createWorkdayService() {
     }
   });
 
+  // socket.io client
+  const socket = useSocket();
+  console.log(`[workdayService] useSocket() accessed and returned with socket id: ${socket.id}`);
+
   onUnmounted(() => {
     try {
       console.log('[workdayService] disconnecting from socket');
@@ -106,6 +124,7 @@ function createWorkdayService() {
   const { mutate: updateWorkday } = useMutation<WorkDay, Error>({
     mutationFn: async (): Promise<WorkDay> => {
       try {
+        console.log('[workdayService] updateWorkday mutation running')
         const now = new Date().toISOString();
         const response = await $fetch<WorkdayApiResponse>('/api/workday', {
           method: 'POST',
@@ -127,6 +146,7 @@ function createWorkdayService() {
       }
     },
     onSuccess: async (updatedWorkdayData) => {
+      console.log('[workdayService] updateWorkday successful, got: ', updatedWorkdayData)
       // https://tanstack.com/query/v5/docs/framework/vue/guides/updates-from-mutation-responses
       queryClient.setQueryData(['workday_service'], updatedWorkdayData);
       queryClient.invalidateQueries({ queryKey: ['workday_service'] });
@@ -169,6 +189,7 @@ function createWorkdayService() {
   const { mutate: pauseWorkday } = useMutation<WorkDay, Error>({
     mutationFn: async (): Promise<WorkDay> => {
       try {
+        console.log('[workdayService] pauseWorkday mutation running')
         const now = new Date().toISOString();
         const response = await $fetch<WorkdayApiResponse>('/api/workday', {
           method: 'POST',
@@ -190,6 +211,7 @@ function createWorkdayService() {
       }
     },
     onSuccess: async (updatedWorkdayData) => {
+      console.log('[workdayService] pauseWorkday successful, got: ', updatedWorkdayData)
       // https://tanstack.com/query/v5/docs/framework/vue/guides/updates-from-mutation-responses
       queryClient.setQueryData(['workday_service'], updatedWorkdayData);
       queryClient.invalidateQueries({ queryKey: ['workday_service'] });
@@ -264,7 +286,10 @@ function createWorkdayService() {
 
 export function useWorkday() {
   if (!workdayInstance) {
+    console.log('[workdayService] did not find existing instance of singleton.')
     workdayInstance = createWorkdayService();
+  } else {
+    console.log('[workdayService] found existing instance of singleton.')
   }
   return workdayInstance;
 }

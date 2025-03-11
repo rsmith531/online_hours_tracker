@@ -99,8 +99,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
   }
 });
 
-// Export io instance for use in API handlers
 export function useIO() {
-  //function to access the io instance.
+  console.log('[io] presence was requested')
   return io;
 }

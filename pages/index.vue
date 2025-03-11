@@ -6,6 +6,7 @@
 
 <script setup>
 import { computed } from 'vue';
+console.log(`[/index] page rendered on ${import.meta.server === true ? 'server' : import.meta.client === true ? 'client' : 'neither server nor client, apparently'}.`)
 
 const {
     workday,

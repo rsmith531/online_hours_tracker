@@ -27,7 +27,7 @@ self.addEventListener('activate', async () => {
     console.log('[serviceWorker] adding event listener for activate... ');
     const subscription = await self.registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array('BDrm3OZerkXyjQ0Vc0Xr_Pewynd6lRCZKLEgLNbfooHvlzJ8bRT2h1Mi7_4J3s_BAk5FDbmGXewU1-tBFlXcC78'), // populated at build time by vite pre-build hook
+      applicationServerKey: urlBase64ToUint8Array('BOdW06v7GXcA5HcaRNVc-eozeQ_f9y9o4_s7qCrWxQw8ldEWOZsvsxX8RtO7R4iHTOXCYt9scZbLyMORoS4xDuM'), // populated at build time by vite pre-build hook
     });
     console.log('[serviceWorker] subscribed to push: ', subscription);
 

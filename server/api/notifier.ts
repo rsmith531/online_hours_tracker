@@ -28,6 +28,8 @@ export default defineEventHandler(async (event) => {
     const origin = event.node.req.headers?.origin?.startsWith('https:')
       ? event.node.req.headers.origin
       : 'https://localhost:3000';
+      console.log(`[api/notifier] request origin from headers is ${event.node.req.headers.origin}`)
+      console.log(`[api/notifier] configuring webpush at ${origin}`)
 
     webpush.setVapidDetails(
       origin,

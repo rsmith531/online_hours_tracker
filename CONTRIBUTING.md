@@ -149,6 +149,50 @@ lupine.roamers.rest {
 test.roamers.rest {
     reverse_proxy :3002
 }
+# Caddyfile
+
+lupine.roamers.rest {
+    rewrite /path /path/
+    handle_path /path/* {
+      rewrite * /socket.io{path}
+      reverse_proxy :3001
+    }
+    reverse_proxy :3001
+}
+
+test.roamers.rest {
+    rewrite /path /path/
+    handle_path /path/* {
+      rewrite * /socket.io{path}
+      reverse_proxy :3002
+    }
+    reverse_proxy :3002
+}
+
+demo.roamers.rest, www.roamers.rest, roamers.rest {
+    rewrite /path /path/
+    handle_path /path/* {
+      rewrite * /socket.io{path}
+      reverse_proxy :3000
+    }
+    reverse_proxy :3000
+}
+# Caddyfile
+
+lupine.roamers.rest {
+    reverse_proxy /socket.io/* :3001
+    reverse_proxy :3001
+}
+
+test.roamers.rest {
+    reverse_proxy /socket.io/* :3002
+    reverse_proxy :3002
+}
+
+demo.roamers.rest, www.roamers.rest, roamers.rest {
+    reverse_proxy /socket.io/* :3000
+    reverse_proxy :3000
+}
 
 ```
 

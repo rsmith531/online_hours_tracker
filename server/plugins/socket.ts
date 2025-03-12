@@ -20,7 +20,11 @@ if (runtime.public.environment !== 'development') {
     );
     // configure the socket to work with pm2 in prod
     const httpServer = createServer();
-    io = new Server(httpServer);
+    // io = new Server(httpServer);
+    io = new Server(Number(runtime.socketPort));
+
+    console.log(`[socket] accepting connections at port ${Number(runtime.socketPort)}`)
+    
 
     // @ts-expect-error I hate socket.io
     // allow socket packets to be broadcast to all clients regardless of node they are connected to

@@ -8,6 +8,7 @@ import { defineEventHandler, getRequestURL } from 'h3';
 import { createServer } from 'node:http';
 import { createAdapter } from '@socket.io/cluster-adapter';
 import { setupWorker } from '@socket.io/sticky';
+import { useRequestURL } from 'nuxt/app';
 
 const runtime = useRuntimeConfig();
 
@@ -60,9 +61,23 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
 
     io.on('connection', (socket) => {
       console.log(`[socket] connected client with id: ${socket.id}`);
+
+      // Log connection details
+      const handshake = socket.handshake;
+      console.log('[socket] connection details:', {
+        clientIP: handshake.address,
+        origin: handshake.headers.origin,
+        location: handshake.headers.location,
+        urlPath: handshake.url,
+        host: handshake.headers.host,
+      });
       // Handle client disconnections
       socket.on('disconnect', (reason) => {
         console.log(`[socket] a client disconnected because ${reason}`);
+    console.log('[socket] final connection stats:', {
+      totalDuration: `${Date.now()- handshake.issued}ms`,
+      lastTransport: socket.conn?.transport?.name
+    });
       });
     });
 

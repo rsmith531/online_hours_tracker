@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import type { WorkdayApiResponse } from 'server/api/workday';
 import { computed } from 'vue';
 import { ToastEventBus } from 'primevue';
-import { useSocket } from './socket.client';
 
 // Singleton instance
 let workdayInstance: ReturnType<typeof createWorkdayService>;
@@ -81,44 +80,6 @@ function createWorkdayService() {
       end_time: null,
       segments: undefined,
     },
-  });
-
-  onMounted(() => {
-    try {
-      console.log(
-        `[workdayService] mounted, opening socket listener for id ${socket.id}`
-      );
-      socket.on('workdayUpdated', (data: WorkDay) => {
-        console.log('[workdayService] receiving updated data: ', data);
-        queryClient.setQueryData(['workday_service'], data);
-        // refetch();
-      });
-    } catch (error) {
-      console.error(
-        '[workdayService] encountered an error while listening for socket updates: ',
-        error
-      );
-    }
-  });
-
-  // socket.io client
-  const socket = useSocket();
-  console.log(`[workdayService] useSocket() accessed and returned with socket id: ${socket.id}`);
-
-  onUnmounted(() => {
-    try {
-      console.log('[workdayService] disconnecting from socket');
-      socket.off('workdayUpdated');
-      console.log(
-        `[workdayService] socket connection is now ${socket.disconnected === true ? 'disconnected' : 'connected'}.`
-      );
-      // socket.disconnect();
-    } catch (error) {
-      console.error(
-        '[workdayService] encountered an error while disconnecting from socket: ',
-        error
-      );
-    }
   });
 
   const { mutate: updateWorkday } = useMutation<WorkDay, Error>({

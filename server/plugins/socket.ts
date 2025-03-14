@@ -1,3 +1,5 @@
+// ~/server/plugins/socket.ts
+
 import type { NitroApp } from 'nitropack';
 import { Server as Engine } from 'engine.io';
 import { Server } from 'socket.io';
@@ -49,6 +51,9 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
 
   io.bind(engine);
 
+  // create a namespace for this particular instance to avoid colliding with other tenants
+  io.of(runtime.public.socketNamespace)
+
   io.on('connection', (socket) => {
     console.log(`[socketServer] sees new connection: ${socket.id}`);
 
@@ -93,5 +98,5 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
 });
 
 export function getIO() {
-  return io;
+  return io.of(runtime.public.socketNamespace);
 }

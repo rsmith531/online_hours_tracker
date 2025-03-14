@@ -8,9 +8,11 @@ const socketInstance = ref<Socket>();
 
 export function useSocket() {
   if (!socketInstance.value) {
+    const runtime = useRuntimeConfig();
     const url = useRequestURL().origin;
-    console.log(`[useSocket] creating socket at ${url}`);
-    socketInstance.value = io(url, {
+    console.log(`[useSocket] creating socket at ${runtime.public.socketNamespace}`);
+    // connect to the namespace this instance is broadcasting on
+    socketInstance.value = io(runtime.public.socketNamespace, {
       reconnection: true,
       transports: ['websocket'],
     });

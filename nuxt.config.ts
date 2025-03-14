@@ -50,6 +50,7 @@ export default defineNuxtConfig({
     loginPassword: process.env.NUXT_LOGIN_PASSWORD,
     vapidPrivateKey: process.env.NUXT_VAPID_PRIVATE_KEY,
     public: {
+      socketNamespace: process.env.NUXT_PUBLIC_SOCKET_NAMESPACE,
       environment: process.env.NUXT_PUBLIC_ENVIRONMENT,
       loginName: process.env.NUXT_PUBLIC_LOGIN_NAME,
       vapidPublicKey: process.env.NUXT_PUBLIC_VAPID_PUBLIC_KEY,

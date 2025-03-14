@@ -12,6 +12,7 @@ import {
   getSegmentsForSession,
 } from '../../utils/db';
 import { ActivityType } from '../../composables/workdayService';
+import { getIO } from '../plugins/socket';
 
 export interface WorkdayApiResponse {
   start_time: Date | null;
@@ -74,6 +75,7 @@ export default defineEventHandler(async (event) => {
 
     if (event.method === 'POST') {
       const body = await readBody(event);
+      const io = getIO();
 
       if (body) {
         let response: WorkdayApiResponse;
@@ -126,7 +128,9 @@ export default defineEventHandler(async (event) => {
                 ],
               };
             }
-            
+
+            io.emit('workdayUpdate', response);
+
             return response;
           }
 
@@ -178,6 +182,8 @@ export default defineEventHandler(async (event) => {
                   }
                 ),
               };
+
+              io.emit('workdayUpdate', response);
 
               return response;
             }

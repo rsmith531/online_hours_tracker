@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import type { WorkdayApiResponse } from 'server/api/workday';
 import { computed } from 'vue';
 import { ToastEventBus } from 'primevue';
+import { useSocket } from './socket.client';
 
 // Singleton instance
 let workdayInstance: ReturnType<typeof createWorkdayService>;
@@ -13,14 +14,18 @@ function createWorkdayService() {
 
   // logged in status of user
   const { loggedIn } = useUserSession();
-  console.log(`[workdayService] service instantiated when user was logged ${loggedIn === true ? 'in' : 'out'}.`)
+  console.log(
+    `[workdayService] service instantiated when user was logged ${loggedIn === true ? 'in' : 'out'}.`
+  );
 
   // Refetch the data when the user logs in so that the page will have a fresh copy to render with
   watch(
     () => loggedIn.value,
     (newValue) => {
       if (newValue === true) {
-        console.log('[workdayService] loggedIn changed to true, refetching data.');
+        console.log(
+          '[workdayService] loggedIn changed to true, refetching data.'
+        );
         refetch();
       }
     },
@@ -85,7 +90,7 @@ function createWorkdayService() {
   const { mutate: updateWorkday } = useMutation<WorkDay, Error>({
     mutationFn: async (): Promise<WorkDay> => {
       try {
-        console.log('[workdayService] updateWorkday mutation running')
+        console.log('[workdayService] updateWorkday mutation running');
         const now = new Date().toISOString();
         const response = await $fetch<WorkdayApiResponse>('/api/workday', {
           method: 'POST',
@@ -107,7 +112,10 @@ function createWorkdayService() {
       }
     },
     onSuccess: async (updatedWorkdayData) => {
-      console.log('[workdayService] updateWorkday successful, got: ', updatedWorkdayData)
+      console.log(
+        '[workdayService] updateWorkday successful, got: ',
+        updatedWorkdayData
+      );
       // https://tanstack.com/query/v5/docs/framework/vue/guides/updates-from-mutation-responses
       queryClient.setQueryData(['workday_service'], updatedWorkdayData);
       queryClient.invalidateQueries({ queryKey: ['workday_service'] });
@@ -150,7 +158,7 @@ function createWorkdayService() {
   const { mutate: pauseWorkday } = useMutation<WorkDay, Error>({
     mutationFn: async (): Promise<WorkDay> => {
       try {
-        console.log('[workdayService] pauseWorkday mutation running')
+        console.log('[workdayService] pauseWorkday mutation running');
         const now = new Date().toISOString();
         const response = await $fetch<WorkdayApiResponse>('/api/workday', {
           method: 'POST',
@@ -172,7 +180,10 @@ function createWorkdayService() {
       }
     },
     onSuccess: async (updatedWorkdayData) => {
-      console.log('[workdayService] pauseWorkday successful, got: ', updatedWorkdayData)
+      console.log(
+        '[workdayService] pauseWorkday successful, got: ',
+        updatedWorkdayData
+      );
       // https://tanstack.com/query/v5/docs/framework/vue/guides/updates-from-mutation-responses
       queryClient.setQueryData(['workday_service'], updatedWorkdayData);
       queryClient.invalidateQueries({ queryKey: ['workday_service'] });
@@ -231,6 +242,43 @@ function createWorkdayService() {
     await fetchOnServer();
   });
 
+  // socket.io client
+  let socket: ReturnType<typeof useSocket>;
+      socket = useSocket();
+
+  onMounted(() => {
+    try {
+      console.log(
+        `[workdayService] mounted, opening socket listener for id ${socket.id}`
+      );
+      socket.on('workdayUpdate', (data: WorkDay) => {
+        console.log('[workdayService] receiving updated data: ', data);
+        queryClient.setQueryData(['workday_service'], data);
+        // refetch();
+      });
+    } catch (error) {
+      console.error(
+        '[workdayService] encountered an error while listening for socket updates: ',
+        error
+      );
+    }
+  });
+
+  onUnmounted(() => {
+    try {
+      socket.off('workdayUpdate');
+      console.log(
+        `[workdayService] socket connection is now ${socket.disconnected === true ? 'disconnected' : 'connected'}.`
+      );
+      // socket.disconnect();
+    } catch (error) {
+      console.error(
+        '[workdayService] encountered an error while disconnecting from socket: ',
+        error
+      );
+    }
+  });
+
   return {
     workday,
     updateWorkday,
@@ -247,10 +295,12 @@ function createWorkdayService() {
 
 export function useWorkday() {
   if (!workdayInstance) {
-    console.log('[workdayService] did not find existing instance of singleton.')
+    console.log(
+      '[workdayService] did not find existing instance of singleton.'
+    );
     workdayInstance = createWorkdayService();
   } else {
-    console.log('[workdayService] found existing instance of singleton.')
+    console.log('[workdayService] found existing instance of singleton.');
   }
   return workdayInstance;
 }

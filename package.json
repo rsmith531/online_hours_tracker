@@ -17,6 +17,8 @@
     "@nuxtjs/color-mode": "^3.5.2",
     "@nuxtjs/tailwindcss": "^6.13.1",
     "@primeuix/themes": "^1.0.0",
+    "@socket.io/cluster-adapter": "^0.2.2",
+    "@socket.io/sticky": "^1.0.4",
     "@tailwindcss/vite": "^4.0.12",
     "@tanstack/vue-query": "^5.66.9",
     "better-sqlite3": "^11.8.1",

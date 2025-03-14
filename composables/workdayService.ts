@@ -244,10 +244,10 @@ function createWorkdayService() {
 
   // socket.io client
   let socket: ReturnType<typeof useSocket>;
-      socket = useSocket();
 
   onMounted(() => {
     try {
+      socket = useSocket();
       console.log(
         `[workdayService] mounted, opening socket listener for id ${socket.id}`
       );

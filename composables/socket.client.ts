@@ -8,24 +8,12 @@ const socketInstance = ref<Socket>();
 
 export function useSocket() {
   if (!socketInstance.value) {
-    // const url = useRequestURL().origin;
-    // console.log(`[useSocket] connecting to socket at ${url}`);
-    // socketInstance.value = io(url, {
-    //   // Enable automatic reconnection
-    //   reconnection: true,
-
-    //   // can't use http long-polling with pm2
-    //   // https://socket.io/docs/v4/pm2/
-    //   transports: ['websocket'],
-    // });
-    socketInstance.value = io(
-      'http://localhost:3000',
-
-      {
-        reconnection: true,
-        transports: ['websocket'],
-      }
-    );
+    const url = useRequestURL().origin;
+    console.log(`[useSocket] creating socket at ${url}`);
+    socketInstance.value = io(url, {
+      reconnection: true,
+      transports: ['websocket'],
+    });
 
     // Handle disconnections
     socketInstance.value.on('disconnect', () => {

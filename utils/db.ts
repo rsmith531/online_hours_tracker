@@ -3,11 +3,14 @@
 // TODO: someday, transition to using an ORM such as prisma or drizzle
 import Database from 'better-sqlite3';
 import type { ActivityType } from '../composables/workdayService';
+import path from 'node:path';
 const db = new Database('workday_data.sqlite');
 // https://github.com/WiseLibs/better-sqlite3/blob/master/docs/performance.md
 db.pragma('journal_mode = WAL');
 
 export function initializeDatabase(): void {
+console.log(`[db] database file is stored at ${path.resolve(db.name)}`)
+
   db.exec(`
       CREATE TABLE IF NOT EXISTS sessions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -30,6 +30,8 @@ export default defineEventHandler(async (event) => {
   // check if request is authorized, throws 401 if not
   await requireUserSession(event);
 
+  console.log(`[api/workday] got request at ${event.path}`)
+
   try {
     // get the current workday
     if (event.method === 'GET') {

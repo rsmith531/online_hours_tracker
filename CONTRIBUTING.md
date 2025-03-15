@@ -168,8 +168,17 @@ module.exports = {
             script: '02_demo_instance/.output/server/index.mjs',
             error_file: '02_demo_instance/logs/error.log',
             out_file: '02_demo_instance/logs/output.log',
+            log_date_format: "MM-DD HH:mm",
             merge_logs: true,
-            autorestart: true
+            autorestart: true,
+            max_restarts: 10,
+            env: {
+                NUXT_PUBLIC_ENVIRONMENT: 'production',
+                NUXT_PUBLIC_SOCKET_NAMESPACE: '/demo',
+                NUXT_LOGIN_USERNAME: 'demo',
+                NUXT_LOGIN_PASSWORD: 'ReasonableSecurity',
+                NUXT_PUBLIC_LOGIN_NAME: 'Demo',
+            },
         },
         {
             name: 'lupine_workday_tracker',
@@ -179,8 +188,17 @@ module.exports = {
             script: '01_my_instance/.output/server/index.mjs',
             error_file: '01_my_instance/logs/error.log',
             out_file: '01_my_instance/logs/output.log',
+            log_date_format: "MM-DD HH:mm",
             merge_logs: true,
-            autorestart: true
+            autorestart: true,
+            max_restarts: 10,
+            env: {
+                NUXT_PUBLIC_ENVIRONMENT: 'production',
+                NUXT_PUBLIC_SOCKET_NAMESPACE: '/lupine',
+                NUXT_LOGIN_USERNAME: 'lupine',
+                NUXT_LOGIN_PASSWORD: 'F0xg1ove&Lupin3',
+                NUXT_PUBLIC_LOGIN_NAME: 'Lupine',
+            },
         },
         {
             name: 'test_workday_tracker',
@@ -190,8 +208,16 @@ module.exports = {
             script: '03_test_instance/.output/server/index.mjs',
             error_file: '03_test_instance/logs/error.log',
             out_file: '03_test_instance/logs/output.log',
+            log_date_format: "MM-DD HH:mm",
             merge_logs: true,
-            autorestart: true
+            autorestart: true,
+            env: {
+                NUXT_PUBLIC_ENVIRONMENT: 'production',
+                NUXT_PUBLIC_SOCKET_NAMESPACE: '/test',
+                NUXT_LOGIN_USERNAME: 'test',
+                NUXT_LOGIN_PASSWORD: 'Lup1n3&Hyacinth',
+                NUXT_PUBLIC_LOGIN_NAME: 'Test',
+            },
         }
     ]
 }

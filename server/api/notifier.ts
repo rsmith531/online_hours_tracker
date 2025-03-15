@@ -73,7 +73,10 @@ export default defineEventHandler(async (event) => {
         // update-subscription: look up the subscriber and change the interval to the new interval
         const requestBody = await readBody(event);
         if (requestBody.interval && requestBody.subscription) {
+          console.log("[api/notifier: PATCH] looking for subscriber...")
+          console.log(`[api/notifier: PATCH] ${requestBody.subscription.endpoint}`)
           const subscriber = subscribers.findIndex((subscriber) => {
+            console.log(`[api/notifier: PATCH] ${subscriber.subscription.endpoint}`)
             return (
               subscriber.subscription.endpoint ===
               requestBody.subscription.endpoint
@@ -106,7 +109,10 @@ export default defineEventHandler(async (event) => {
         // remove-subscription: look up the subscriber and remove it
         const requestBody = await readBody(event);
         if (requestBody.subscription) {
+          console.log("[api/notifier: DELETE] looking for subscriber...")
+          console.log(`[api/notifier: DELETE] ${requestBody.subscription.endpoint}`)
           const subscriber = subscribers.findIndex((subscriber) => {
+            console.log(`[api/notifier: DELETE] ${subscriber.subscription.endpoint}`)
             return (
               subscriber.subscription.endpoint ===
               requestBody.subscription.endpoint

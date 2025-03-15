@@ -77,7 +77,7 @@ function createWorkdayService() {
     // disabled when user is not logged in or when in server environment
     // enabled: !import.meta.server && loggedIn,
     // enabled: loggedIn,
-    enabled: !import.meta.server,
+    // enabled: !import.meta.server,
     // refetch to make sure the stopwatch doesn't get too far out of sync
     refetchInterval: 1000 * 60 * 5, // 5 minutes
     placeholderData: {

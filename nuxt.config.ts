@@ -77,7 +77,7 @@ export default defineNuxtConfig({
     },
     families: [
       { name: 'Doto', weights: [400, 800, 900] },
-      { name: 'DSEG7 Classic', weights: [500] },
+      { name: 'DSEG7 Classic', weights: [400, 800, 900] },
     ],
   },
   hooks: {

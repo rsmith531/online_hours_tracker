@@ -1,20 +1,23 @@
 <!-- ~/components/base/FloatingButton.vue -->
 
 <template>
-  <SpeedDial v-if="workday" :model="items" type="semi-circle" :radius="70" direction="up" :transitionDelay="80" style="
+  <ClientOnly>
+    <SpeedDial v-if="workday && !isPending" :model="items" type="semi-circle" :radius="70" direction="up"
+      :transitionDelay="80" style="
     position: absolute; 
     left: calc(50%-20); 
     bottom: 2rem;
   " :tooltipOptions="{ position: 'left' }">
-    <template #item="{ item, toggleCallback }">
-      <Button v-tooltip.top="{
-        value: item.label,
-        showDelay: 600,
-        hideDelay: 300,
-        autoHide: false,
-      }" rounded :icon="item.icon" severity="contrast" @click="toggleCallback" />
-    </template>
-  </SpeedDial>
+      <template #item="{ item, toggleCallback }">
+        <Button v-tooltip.top="{
+          value: item.label,
+          showDelay: 600,
+          hideDelay: 300,
+          autoHide: false,
+        }" rounded :icon="item.icon" severity="contrast" @click="toggleCallback" />
+      </template>
+    </SpeedDial>
+  </ClientOnly>
 </template>
 
 <script setup>
@@ -29,9 +32,14 @@ const {
   isWorkdayNull,
   isWorkdayOpen,
   isWorkdayPaused,
+  isPending
 } = useWorkday();
 
 const items = computed(() => {
+  // if the workday data isn't ready yet, don't try computing the buttons
+  if (isPending.value || !workday.value) {
+    return [];
+  }
   return [
     ...(isWorkdayClosed.value || isWorkdayNull.value
       ? [

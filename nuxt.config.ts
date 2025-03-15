@@ -35,8 +35,18 @@ export default defineNuxtConfig({
     experimental: {
       websocket: true,
     },
+    // logging: { buildSuccess: true, compressedSizes: true },
+    logLevel: 1,
   },
-  vite: { plugins: [tailwindcss()], assetsInclude: ['**/*.md'] },
+  security: { removeLoggers: false },
+  vite: {
+    plugins: [tailwindcss()],
+    assetsInclude: ['**/*.md'],
+    // logLevel: 'info',
+    // build: { terserOptions: { compress: { drop_console: false } } },
+  },
+  // debug: true,
+  // logLevel: 'info',
   components: [
     {
       path: '~/components',

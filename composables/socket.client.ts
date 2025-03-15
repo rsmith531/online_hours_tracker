@@ -17,6 +17,11 @@ export function useSocket() {
       transports: ['websocket'],
     });
 
+    // Handle connections
+    // socketInstance.value.on('connect', () => {
+    //   console.log(`[socket] connected to namespace: ${runtime.public.socketNamespace}`);
+    // });
+
     // Handle disconnections
     socketInstance.value.on('disconnect', () => {
       console.log('[socket] disconnected');

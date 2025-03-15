@@ -270,7 +270,7 @@ function createWorkdayService() {
       console.log(
         `[workdayService] socket connection is now ${socket.disconnected === true ? 'disconnected' : 'connected'}.`
       );
-      // socket.disconnect();
+      socket.disconnect();
     } catch (error) {
       console.error(
         '[workdayService] encountered an error while disconnecting from socket: ',

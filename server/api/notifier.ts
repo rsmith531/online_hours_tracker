@@ -28,8 +28,10 @@ export default defineEventHandler(async (event) => {
     const origin = event.node.req.headers?.origin?.startsWith('https:')
       ? event.node.req.headers.origin
       : 'https://localhost:3000';
-      console.log(`[api/notifier] request origin from headers is ${event.node.req.headers.origin}`)
-      console.log(`[api/notifier] configuring webpush at ${origin}`)
+    console.log(
+      `[api/notifier] request origin from headers is ${event.node.req.headers.origin}`
+    );
+    console.log(`[api/notifier] configuring webpush at ${origin}`);
 
     webpush.setVapidDetails(
       origin,
@@ -73,10 +75,14 @@ export default defineEventHandler(async (event) => {
         // update-subscription: look up the subscriber and change the interval to the new interval
         const requestBody = await readBody(event);
         if (requestBody.interval && requestBody.subscription) {
-          console.log("[api/notifier: PATCH] looking for subscriber...")
-          console.log(`[api/notifier: PATCH] ${requestBody.subscription.endpoint}`)
+          console.log('[api/notifier: PATCH] looking for subscriber...');
+          console.log(
+            `[api/notifier: PATCH] ${requestBody.subscription.endpoint}`
+          );
           const subscriber = subscribers.findIndex((subscriber) => {
-            console.log(`[api/notifier: PATCH] ${subscriber.subscription.endpoint}`)
+            console.log(
+              `[api/notifier: PATCH] ${subscriber.subscription.endpoint}`
+            );
             return (
               subscriber.subscription.endpoint ===
               requestBody.subscription.endpoint
@@ -109,10 +115,14 @@ export default defineEventHandler(async (event) => {
         // remove-subscription: look up the subscriber and remove it
         const requestBody = await readBody(event);
         if (requestBody.subscription) {
-          console.log("[api/notifier: DELETE] looking for subscriber...")
-          console.log(`[api/notifier: DELETE] ${requestBody.subscription.endpoint}`)
+          console.log('[api/notifier: DELETE] looking for subscriber...');
+          console.log(
+            `[api/notifier: DELETE] ${requestBody.subscription.endpoint}`
+          );
           const subscriber = subscribers.findIndex((subscriber) => {
-            console.log(`[api/notifier: DELETE] ${subscriber.subscription.endpoint}`)
+            console.log(
+              `[api/notifier: DELETE] ${subscriber.subscription.endpoint}`
+            );
             return (
               subscriber.subscription.endpoint ===
               requestBody.subscription.endpoint
@@ -162,11 +172,20 @@ async function checkAndSendNotifications() {
           subscriber.subscription,
           `You have been working for ${formatDuration(totalWorkingDuration)}`
         );
-        // Calculate the next target notification time
-        subscriber.targetNotificationTime += subscriber.interval * 1000;
       } catch (error) {
         console.error('Failed to send notification:', error);
+        if (error instanceof webpush.WebPushError && error.statusCode === 410) {
+          // try deleting the subscriber from the list since they are no longer subscribed
+          // https://autopush.readthedocs.io/en/latest/http.html#error-codes
+          await $fetch('/api/notifier', {
+            method: 'DELETE',
+            body: { subscription: subscriber.subscription },
+          });
+        }
       }
+      // recalculate outside the try/catch so that if delivery fails, it won't keep trying to send another for this interval match
+      // Calculate the next target notification time
+      subscriber.targetNotificationTime += subscriber.interval * 1000;
     }
   }
 }

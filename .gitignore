@@ -1,3 +1,16 @@
+# ====== project configuration ======
+# see CONTRIBUTING.md for instructions
+
+# private .env file
+.env
+
+# TLS certificates
+*ca.*
+*cert.*
+*.pem
+
+# ===================================
+
 # Nuxt dev/build outputs
 .output
 .data
@@ -6,19 +19,11 @@
 .cache
 dist
 
-# private .env file
-.env
-
 # knip outputs
 knip_report.json
 
-#sqlite database
+# sqlite database
 *.sqlite*
-
-# TLS certificates
-*ca.*
-*cert.*
-*.pem
 
 # font data
 .data

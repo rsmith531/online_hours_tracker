@@ -75,10 +75,7 @@ export default defineNuxtConfig({
         monospace: ['Courier New'],
       },
     },
-    families: [
-      { name: 'Doto', weights: [400, 800, 900] },
-      { name: 'DSEG7 Classic', weights: [400, 800, 900] },
-    ],
+    families: [{ name: 'DSEG7 Classic', weights: [400] }],
   },
   hooks: {
     // make sure the VAPID public key gets injected into serviceWorker.ts at build time
@@ -110,5 +107,31 @@ export default defineNuxtConfig({
   },
   devtools: {
     enabled: process.env.NUXT_PUBLIC_ENVIRONMENT === 'development',
+  },
+  app: {
+    head: {
+      title: 'Workday Tracker',
+      meta: [
+        {
+          name: 'description',
+          content:
+            'My project website to demonstrate proficiency with a Nuxt/Vue stack.',
+        },
+        { property: 'og:title', content: 'Workday Tracker' },
+        { property: 'og:description', content: 'My project website to demonstrate proficiency with a Nuxt/Vue stack.' },
+        { property: 'og:type', content: 'website' },
+        { property: 'og:url', content: 'https://roamers.rest' },
+        { property: 'og:locale', content: 'en_US' },
+        { property: 'og:image', content: 'https://roamers.rest/social.jpg' },
+        { property: 'og:image:type', content: 'image/jpeg' },
+        { property: 'og:image:width', content: '1200' },
+        { property: 'og:image:height', content: '628' },
+        { property: 'og:image:alt', content: 'Workday Tracker Logo' },
+      ],
+      htmlAttrs: {
+        lang: 'en',
+      },
+      link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+    },
   },
 });

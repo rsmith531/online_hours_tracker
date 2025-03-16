@@ -19,7 +19,7 @@
           transform: translate(-50%, -50%);
           pointer-events: none;
           user-select: none;
-          opacity: 0.15;
+          opacity: 0.10;
         " class="
         text-5xl sm:text-8xl
         ">

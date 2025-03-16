@@ -16,7 +16,7 @@
             <template #subtitle class="pb-4">Please sign in to continue</template>
 
             <template #content>
-                <form @submit.prevent="login" :style="{ marginTop: '1rem', marginBottom: '1rem' }">
+                <form @submit.prevent="login" :style="{ marginTop: '1rem' }">
                     <InputGroup class="pb-7 pt-2">
                         <InputGroupAddon>
                             <i class="pi pi-user"></i>
@@ -35,13 +35,13 @@
                             <label for="password">Password</label>
                         </FloatLabel>
                     </InputGroup>
+                    <div class="flex gap-4 mt-3 justify-end">
+                        <Button type='submit' icon="pi pi-sign-in" label="Login" :loading="loading" />
+                    </div>
                 </form>
             </template>
-            <template #footer>
-                <div class="flex gap-4 mt-1 justify-end">
-                    <Button @click="login" icon="pi pi-sign-in" label="Login" :loading="loading" />
-                </div>
-            </template>
+            <!-- <template #footer>
+            </template> -->
         </Card>
     </div>
 

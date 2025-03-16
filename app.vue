@@ -14,6 +14,7 @@
 
 <script setup lang="ts">
 import { VueQueryDevtools } from '@tanstack/vue-query-devtools';
+import '~/assets/css/main.css';
 
 const runtimeConfig = useRuntimeConfig()
 // TODO: does this need to be a ref?

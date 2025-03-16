@@ -38,7 +38,7 @@ export default defineNuxtConfig({
     // logging: { buildSuccess: true, compressedSizes: true },
     logLevel: 1,
   },
-  security: { removeLoggers: false },
+  security: { removeLoggers: true },
   vite: {
     plugins: [tailwindcss()],
     assetsInclude: ['**/*.md'],

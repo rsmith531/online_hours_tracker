@@ -1,7 +1,10 @@
 <!-- ~/pages/index.vue -->
 
 <template>
-    <DigitalClock :time="workdayDuration" :stopwatch="isWorkdayOpen && !isWorkdayPaused" />
+    <div style="display: flex; flex-direction: column; gap: 9rem; align-items:center;">
+        <DigitalClock :time="workdayDuration" :stopwatch="isWorkdayOpen && !isWorkdayPaused" />
+        <WorkTimeline />
+    </div>
 </template>
 
 <script setup>

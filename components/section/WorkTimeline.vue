@@ -1,7 +1,7 @@
 <!-- ~/components/section/WorkTimeline.vue -->
 
 <template>
-    <div style="width: 100%;">
+    <div style="width: min-content;">
         <svg ref="timelineSvg"></svg>
     </div>
 </template>
@@ -10,11 +10,11 @@
 import { select, scaleLinear, min, max, line } from "d3";
 
 const props = defineProps({
-  vertical: {
-     type: Boolean,
-     required: false,
-     default: false,
-  }
+    vertical: {
+        type: Boolean,
+        required: false,
+        default: false,
+    }
 })
 
 const timelineSvg = ref<SVGSVGElement | null>(null);
@@ -43,8 +43,8 @@ onMounted(() => {
     console.log(`[WorkTimeline] ============================`)
     if (timelineSvg.value) {
         // instantiate the d3 chart
-        const width = 800;
-        const height = 100;
+        const width = props.vertical === false ? 800 : 100;
+        const height = props.vertical === false ? 100 : 800;
         const svg = select(timelineSvg.value)
             .attr("width", width)
             .attr("height", height);
@@ -58,15 +58,18 @@ onMounted(() => {
         }
 
         // scaleLinear(domain, range(the dimension of the containing chart))
-        const x = scaleLinear([minimumValue, maximumValue], [0 + 10, width - 10]);
-
+        const x = props.vertical
+            ? scaleLinear([yValue, yValue], [0 + 10, width - 10])
+            : scaleLinear([minimumValue, maximumValue], [0 + 10, width - 10]);
         // scale for the y axis
-        const y = scaleLinear([yValue, yValue], [height / 2, height / 2]);
+        const y = props.vertical
+            ? scaleLinear([minimumValue, maximumValue], [20, height - 20])
+            : scaleLinear([yValue, yValue], [height / 2, height / 2]);
 
         // declare the line generator
         const chartline = line<{ date: number, amount: number }>()
-            .x(d => x(d.date))
-            .y(d => y(d.amount));
+            .x(d => props.vertical ? x(d.amount) : x(d.date))
+            .y(d => props.vertical ? y(d.date) : y(d.amount));
 
         /**
          * function to draw a line segment between two data points.
@@ -129,10 +132,14 @@ onMounted(() => {
             .enter()
             .append("line")
             .classed("tick", true) // add the class to the new lines
-            .attr("x1", d => x(d.date))
-            .attr("y1", height / 2 - tickHeight / 2) // position the top of the tick
-            .attr("x2", d => x(d.date))
-            .attr("y2", height / 2 + tickHeight / 2) // position the bottom of the tick
+
+            // positioning
+            .attr("x1", d => props.vertical ? width / 2 - tickHeight / 2 : x(d.date))
+            .attr("y1", d => props.vertical ? y(d.date) : height / 2 - tickHeight / 2)
+            .attr("x2", d => props.vertical ? width / 2 + tickHeight / 2 : x(d.date))
+            .attr("y2", d => props.vertical ? y(d.date) : height / 2 + tickHeight / 2)
+
+            // styling
             .attr("stroke", "var(--p-panel-color)")
             .attr("stroke-width", 3)
             .attr("stroke-linecap", "round");
@@ -145,14 +152,22 @@ onMounted(() => {
             .enter()
             .append("text")
             .classed("label", true)
-            .attr("x", d => x(d.date))
-            .attr("y", (_d, i) => {
-                const baseOffset = tickHeight / 2 + labelSpacing;
-                return i % 2 === 0 // alternate point position
-                    ? height / 2 - baseOffset - 5 // above the line
-                    : height / 2 + baseOffset + 15; // below the line
-            })
-            .attr("text-anchor", "middle") // center the text
+            .attr("x", d => props.vertical
+                // vertical label position
+                ? width / 2 + tickHeight / 2 + labelSpacing // right of the line
+                : x(d.date)
+            )
+            .attr("y", (d, i) => props.vertical
+                ? y(d.date)
+                : (
+                    // horizontal label position
+                    i % 2 === 0
+                        ? height / 2 - tickHeight / 2 - labelSpacing - 5 // above the line
+                        : height / 2 + tickHeight / 2 + labelSpacing + 15 // below the line
+                )
+            )
+            .attr("dy", () => props.vertical ? "0.35rem" : 0)
+            .attr("text-anchor", d => props.vertical ? "start" : "middle") // center the text
             .style("fill", "var(--p-panel-color)")
             .text(d => d.date);
 

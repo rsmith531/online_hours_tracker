@@ -1,9 +1,9 @@
 <!-- ~/pages/index.vue -->
 
 <template>
-    <div style="display: flex; flex-direction: column; gap: 9rem; align-items:center; margin-top: 16rem;margin-bottom: 6rem;">
+    <div style="display: flex; flex-direction: column; align-items:center; gap: 3rem; position: relative;" class="top-[calc(50vh-7rem-5.25rem)] sm:top-0">
         <DigitalClock :time="workdayDuration" :stopwatch="isWorkdayOpen && !isWorkdayPaused" />
-        <WorkTimeline :vertical="true" />
+        <WorkTimeline :vertical="$device.isMobile" />
     </div>
 </template>
 

@@ -7,7 +7,7 @@
     transition: 'all 0.7s ease-in-out',
     border: '2px solid'
   }" 
-  class="min-w-[21.75rem] sm:min-w-[37.625rem]"
+  class="min-w-[21.75rem] sm:min-w-[37.625rem] my-[7rem]"
   >
     <template #header>
       <p class="
@@ -59,13 +59,13 @@ const {
 } = useWorkday();
 
 const borderColor = computed(() => {
-  if (isPending.value || isWorkdayNull.value) return 'blue';
-  if (isWorkdayClosed.value) return 'red';
+  if (isPending.value || isWorkdayNull.value) return 'transparent';
+  if (isWorkdayClosed.value) return 'var(--workday-closed)';
   if (isWorkdayOpen.value) {
     if (!isWorkdayPaused.value) {
-      return 'green';
+      return 'var(--workday-active)';
     }
-    return 'yellow';
+    return 'var(--workday-paused)';
   }
   return 'grey';
 });

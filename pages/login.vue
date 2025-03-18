@@ -8,6 +8,7 @@
         flexGrow: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        height: '100vh'
     }">
         <Card class="w-[90%] sm:w-fit">
 

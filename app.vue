@@ -22,18 +22,3 @@ const enableDevTools = ref<boolean>(
   runtimeConfig.public.environment === 'development'
 );
 </script>
-
-<style>
-html,
-body {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-
-#__nuxt {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
-</style>

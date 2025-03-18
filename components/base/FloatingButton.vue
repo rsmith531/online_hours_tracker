@@ -2,12 +2,11 @@
 
 <template>
   <ClientOnly>
-    <SpeedDial v-if="workday && !isPending" :model="items" type="semi-circle" :radius="70" direction="up"
-      :transitionDelay="80" style="
-    position: absolute; 
-    left: calc(50%-20); 
+    <SpeedDial v-if="workday && !isPending" :model="items" :type="$device.isMobile ? 'quarter-circle' : 'semi-circle'"
+      :radius="$device.isMobile ? 100 : 70" :direction="$device.isMobile ? 'up-left' : 'up'" :transitionDelay="80" style="
+    position: fixed; 
     bottom: 2rem;
-  " :tooltipOptions="{ position: 'left' }">
+  " :style="{ 'right': $device.isMobile ? '2rem' : 'calc(50%+20)' }" :tooltipOptions="{ position: 'left' }">
       <template #item="{ item, toggleCallback }">
         <Button v-tooltip.top="{
           value: item.label,

@@ -16,6 +16,7 @@ export default defineNuxtConfig({
     '@nuxtjs/color-mode',
     '@nuxt/image',
     '@nuxt/test-utils/module',
+    '@nuxtjs/device',
   ],
   typescript: {
     typeCheck: true,

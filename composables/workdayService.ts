@@ -5,6 +5,7 @@ import type { WorkdayApiResponse } from 'server/api/workday';
 import { computed } from 'vue';
 import { ToastEventBus } from 'primevue';
 import { useSocket } from './socket.client';
+import { H3Error } from 'h3';
 
 // Singleton instance
 let workdayInstance: ReturnType<typeof createWorkdayService>;
@@ -15,7 +16,7 @@ function createWorkdayService() {
   // logged in status of user
   const { loggedIn } = useUserSession();
   console.log(
-    `[workdayService] service instantiated when user was logged ${loggedIn === true ? 'in' : 'out'}.`
+    `[workdayService] service instantiated when user was logged ${loggedIn.value === true ? 'in' : 'out'}.`
   );
 
   // Refetch the data when the user logs in so that the page will have a fresh copy to render with
@@ -28,8 +29,7 @@ function createWorkdayService() {
         );
         refetch();
       }
-    },
-    { immediate: false } // Do not run on initial setup
+    }
   );
 
   const {
@@ -38,60 +38,104 @@ function createWorkdayService() {
     isPending,
     isError,
     suspense: fetchOnServer,
-  } = useQuery<WorkDay>({
+  } = useQuery<WorkDay | null>({
     queryKey: ['workday_service'],
-    queryFn: async (): Promise<WorkDay> => {
+    queryFn: async (): Promise<WorkDay | null> => {
       try {
-        let parsedResponse: WorkDay;
+        let parsedResponse: WorkDay | null = null;
+        // useFetch() on server for auth session
         if (import.meta.server) {
           console.log('[workdayService] running queryFn on server');
-          const response = await useFetch<WorkdayApiResponse>('/api/workday');
-          parsedResponse = {
-            start_time: response.data.value?.start_time
-              ? new Date(response.data.value.start_time)
-              : null,
-            end_time: response.data.value?.end_time
-              ? new Date(response.data.value.end_time)
-              : null,
-            segments: response.data.value?.segments
-              ? response.data.value.segments
-              : undefined,
-          };
+
+          const response = await useFetch<WorkdayApiResponse | null | H3Error>(
+            '/api/workday'
+          );
+
+          if (response.data.value instanceof H3Error) {
+            console.error(
+              '[workdayService] error while fetching workday from server: ',
+              response.data.value
+            );
+            throw new Error(response.data.value.message);
+          }
+
+          if (response.data.value) {
+            // parse ISO strings into Date objects
+            parsedResponse = {
+              start_time: new Date(response.data.value.start_time),
+              end_time: response.data.value.end_time
+                ? new Date(response.data.value.end_time)
+                : null,
+              segments: response.data.value.segments
+                ? response.data.value.segments.map((segment) => {
+                    return {
+                      start_time: new Date(segment.start_time),
+                      end_time: segment.end_time
+                        ? new Date(segment.end_time)
+                        : null,
+                      activity: segment.activity,
+                    };
+                  })
+                : null,
+            };
+          }
+
+          // $fetch() on client for auth session
         } else {
           console.log('[workdayService] running queryFn on client');
-          const response = await $fetch<WorkdayApiResponse>('/api/workday');
-          parsedResponse = {
-            start_time: response.start_time
-              ? new Date(response.start_time)
-              : null,
-            end_time: response.end_time ? new Date(response.end_time) : null,
-            segments: response.segments ? response.segments : undefined,
-          };
+
+          const response = await $fetch<WorkdayApiResponse | null | H3Error>(
+            '/api/workday'
+          );
+
+          if (response instanceof H3Error) {
+            console.error(
+              '[workdayService] error while fetching workday from server: ',
+              response
+            );
+            throw new Error(response.message);
+          }
+
+          if (response) {
+            // parse ISO strings into Date objects
+            parsedResponse = {
+              start_time: new Date(response.start_time),
+              end_time: response.end_time ? new Date(response.end_time) : null,
+              segments: response.segments
+                ? response.segments.map((segment) => {
+                    return {
+                      start_time: new Date(segment.start_time),
+                      end_time: segment.end_time
+                        ? new Date(segment.end_time)
+                        : null,
+                      activity: segment.activity,
+                    };
+                  })
+                : null,
+            };
+          }
         }
+
         return parsedResponse;
       } catch (error) {
         console.error('Error fetching workday from API: ', error);
         throw error;
       }
     },
-    // disabled when user is not logged in or when in server environment
-    // enabled: !import.meta.server && loggedIn,
-    // enabled: loggedIn,
-    // enabled: !import.meta.server,
     // refetch to make sure the stopwatch doesn't get too far out of sync
     refetchInterval: 1000 * 60 * 5, // 5 minutes
-    placeholderData: {
-      start_time: null,
-      end_time: null,
-      segments: undefined,
-    },
+    placeholderData: null,
   });
 
+  // mutation that stops and starts the workday
   const { mutate: updateWorkday } = useMutation<WorkDay, Error>({
     mutationFn: async (): Promise<WorkDay> => {
       try {
         console.log('[workdayService] updateWorkday mutation running');
+
+        // get one singular now to use for the following operations
         const now = new Date().toISOString();
+
         const response = await $fetch<WorkdayApiResponse>('/api/workday', {
           method: 'POST',
           headers: {
@@ -99,12 +143,30 @@ function createWorkdayService() {
           },
           body: JSON.stringify({ action: 'toggle', timestamp: now }),
         });
+
+        if (response instanceof H3Error) {
+          console.error(
+            '[workdayService] error while mutating workday: ',
+            response
+          );
+          throw new Error(response.message);
+        }
+
         return {
-          start_time: response.start_time
-            ? new Date(response.start_time)
-            : null,
+          // parse ISO strings into Date objects
+          start_time: new Date(response.start_time),
           end_time: response.end_time ? new Date(response.end_time) : null,
-          segments: response.segments,
+          segments: response.segments
+            ? response.segments.map((segment) => {
+                return {
+                  start_time: new Date(segment.start_time),
+                  end_time: segment.end_time
+                    ? new Date(segment.end_time)
+                    : null,
+                  activity: segment.activity,
+                };
+              })
+            : null,
         };
       } catch (error) {
         console.error('Failed to update workday via API', error);
@@ -118,9 +180,11 @@ function createWorkdayService() {
       );
       // https://tanstack.com/query/v5/docs/framework/vue/guides/updates-from-mutation-responses
       queryClient.setQueryData(['workday_service'], updatedWorkdayData);
-      queryClient.invalidateQueries({ queryKey: ['workday_service'] });
+
       const startTime: Date | null = updatedWorkdayData.start_time;
       const endTime: Date | null = updatedWorkdayData.end_time;
+
+      // advise the user of the successful update
       ToastEventBus.emit('add', {
         severity: endTime ? 'error' : 'success',
         summary: `${endTime ? 'Closed' : 'Opened'} workday at ${
@@ -145,7 +209,10 @@ function createWorkdayService() {
       });
     },
     onError: (error) => {
+      // for the devs
       console.error(`Failed to update workday: ${error.message}.`);
+
+      // for the client
       ToastEventBus.emit('add', {
         severity: 'error',
         summary: 'Uh oh',
@@ -155,11 +222,14 @@ function createWorkdayService() {
     },
   });
 
+  // mutation that pauses and unpauses the workday
   const { mutate: pauseWorkday } = useMutation<WorkDay, Error>({
     mutationFn: async (): Promise<WorkDay> => {
       try {
         console.log('[workdayService] pauseWorkday mutation running');
+
         const now = new Date().toISOString();
+
         const response = await $fetch<WorkdayApiResponse>('/api/workday', {
           method: 'POST',
           headers: {
@@ -167,12 +237,29 @@ function createWorkdayService() {
           },
           body: JSON.stringify({ action: 'pause', timestamp: now }),
         });
+
+        if (response instanceof H3Error) {
+          console.error(
+            '[workdayService] error while mutating workday: ',
+            response
+          );
+          throw new Error(response.message);
+        }
+
         return {
-          start_time: response.start_time
-            ? new Date(response.start_time)
-            : null,
+          start_time: new Date(response.start_time),
           end_time: response.end_time ? new Date(response.end_time) : null,
-          segments: response.segments,
+          segments: response.segments
+            ? response.segments.map((segment) => {
+                return {
+                  start_time: new Date(segment.start_time),
+                  end_time: segment.end_time
+                    ? new Date(segment.end_time)
+                    : null,
+                  activity: segment.activity,
+                };
+              })
+            : null,
         };
       } catch (error) {
         console.error('Failed to pause workday via API', error);
@@ -186,11 +273,13 @@ function createWorkdayService() {
       );
       // https://tanstack.com/query/v5/docs/framework/vue/guides/updates-from-mutation-responses
       queryClient.setQueryData(['workday_service'], updatedWorkdayData);
-      queryClient.invalidateQueries({ queryKey: ['workday_service'] });
+
+      // get the last segment in the array
       const segment = updatedWorkdayData.segments?.at(-1);
       const startTime = segment?.start_time && new Date(segment.start_time);
       const activity = segment?.activity;
 
+      // advise the user of the successful mutation
       ToastEventBus.emit('add', {
         severity: activity === ActivityType.Working ? 'success' : 'warn',
         summary: `${activity === ActivityType.Working ? 'Unpaused' : 'Paused '} workday at ${startTime ? startTime.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : 'error'}`,
@@ -202,7 +291,10 @@ function createWorkdayService() {
       });
     },
     onError: async (error) => {
+      // for the devs
       console.error(`Failed to pause workday: ${error.message}.`);
+
+      // for the client
       ToastEventBus.emit('add', {
         severity: 'error',
         summary: 'Uh oh',
@@ -211,6 +303,8 @@ function createWorkdayService() {
       });
     },
   });
+
+  // various boolean workday statuses
 
   const isWorkdayOpen = computed(() => {
     return (workday.value?.start_time !== null &&
@@ -238,6 +332,7 @@ function createWorkdayService() {
       workday.value?.end_time === null) as boolean;
   });
 
+  // https://tanstack.com/query/v5/docs/framework/vue/guides/ssr
   onServerPrefetch(async () => {
     await fetchOnServer();
   });
@@ -251,10 +346,22 @@ function createWorkdayService() {
       console.log(
         `[workdayService] mounted, opening socket listener for id ${socket.id}`
       );
+
+      // when it hears an update on the websocket connection,
       socket.on('workdayUpdate', (data: WorkDay) => {
         console.log('[workdayService] receiving updated data: ', data);
-        queryClient.setQueryData(['workday_service'], data);
-        // refetch();
+        // set the query to the newly received data
+        queryClient.setQueryData(['workday_service'], {
+          start_time: new Date(data.start_time),
+          end_time: data.end_time ? new Date(data.end_time) : null,
+          segments: data.segments?.map((segment) => {
+            return {
+              start_time: new Date(segment.start_time),
+              end_time: segment.end_time ? new Date(segment.end_time) : null,
+              activity: segment.activity,
+            };
+          }),
+        });
       });
     } catch (error) {
       console.error(
@@ -279,6 +386,7 @@ function createWorkdayService() {
     }
   });
 
+  // all the methods available for use on the useWorkday function
   return {
     workday,
     updateWorkday,
@@ -306,15 +414,15 @@ export function useWorkday() {
 }
 
 export interface WorkDay {
-  start_time: Date | null;
+  start_time: Date;
   end_time: Date | null;
   segments:
     | {
-        start_time: Date | null;
+        start_time: Date;
         end_time: Date | null;
         activity: ActivityType;
       }[]
-    | undefined;
+    | null;
 }
 
 export enum ActivityType {

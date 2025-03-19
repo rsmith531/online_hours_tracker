@@ -1,6 +1,6 @@
 // ~/server/api/workday.ts
 
-import { defineEventHandler, readBody, createError } from 'h3';
+import { defineEventHandler, readBody, createError, type H3Error } from 'h3';
 import {
   createSession,
   updateSessionEnd,
@@ -15,18 +15,18 @@ import { ActivityType } from '../../composables/workdayService';
 import { getIO } from '../plugins/socket';
 
 export interface WorkdayApiResponse {
-  start_time: Date | null;
+  start_time: Date;
   end_time: Date | null;
   segments:
     | {
-        start_time: Date | null;
+        start_time: Date;
         end_time: Date | null;
         activity: ActivityType;
       }[]
     | undefined;
 }
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<WorkdayApiResponse | null | H3Error> => {
   // check if request is authorized, throws 401 if not
   await requireUserSession(event);
 
@@ -35,11 +35,7 @@ export default defineEventHandler(async (event) => {
   try {
     // get the current workday
     if (event.method === 'GET') {
-      let response: WorkdayApiResponse = {
-        start_time: null,
-        end_time: null,
-        segments: undefined,
-      };
+      let response: WorkdayApiResponse | null = null;
       const openSession = getOpenSession();
       if (openSession) {
         const segments = getSegmentsForSession(openSession.id);
@@ -82,7 +78,7 @@ export default defineEventHandler(async (event) => {
       console.log(`[api/workday] socket listeners at namespace ${runtime.public.socketNamespace}: `, (await io.fetchSockets()).map((socket) => {return socket.id}))
 
       if (body) {
-        let response: WorkdayApiResponse;
+        let response: WorkdayApiResponse | null = null;
         // use provided timestamp, or the servers.
         const timestamp = body.timestamp
           ? new Date(body.timestamp)

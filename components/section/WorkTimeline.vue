@@ -239,7 +239,9 @@ async function drawTimeline() {
         const tickHeight = 20;
 
         svg.selectAll("line.tick") // use a class to easily select the ticks
-            .data(timelineData.value.filter(d => d.type !== 'padding')) // minus the padding data points
+            .data(timelineData.value.filter(d => d.type !== 'padding'
+                && d.type !== PointType.Pause 
+                && d.type !== PointType.Unpause)) // minus the padding data points
             .join("line")
             .classed("tick", true) // add the class to the new lines
 

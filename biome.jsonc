@@ -85,6 +85,7 @@
          * cost to any developer.
          */
         "noDefaultExport": "off",
+        "noParameterAssign": "off",
         "noNamespace": "warn",
         "noNamespaceImport": "error",
         "noNegationElse": "off",

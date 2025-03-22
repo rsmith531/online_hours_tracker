@@ -1,6 +1,16 @@
 // ~/public/serviceWorker.js
 
-let notificationInterval = 60*60; // Default value: 1hr
+let notificationInterval = 60 * 60; // Default value: 1hr
+
+let intervalPromiseResolve;
+
+// create a tripwire to hold the activate event from running
+// when the resolve function is called, it ends the await so
+// any code after it can be executed
+const intervalPromise = new Promise((resolve) => {
+  // assign the tripwire to the accessor
+  intervalPromiseResolve = resolve;
+});
 
 // TODO: does the service worker unsubscribe with the push manager when it is unregistered? Does it need to?
 
@@ -8,12 +18,15 @@ let notificationInterval = 60*60; // Default value: 1hr
 // update the notification interval when it gets the message from the server
 self.addEventListener('message', (event) => {
   try {
+    console.log('[serviceWorker] adding event listener for message... ');
     if (event.data && event.data.type === 'initialNotificationInterval') {
       notificationInterval = event.data.interval;
       console.log(
         '[serviceWorker] Received initial notificationInterval:',
         notificationInterval
       );
+      // trigger the tripwire (resolve the promise)
+      intervalPromiseResolve();
     }
   } catch (error) {
     console.error(
@@ -28,9 +41,18 @@ self.addEventListener('message', (event) => {
 self.addEventListener('activate', async () => {
   try {
     console.log('[serviceWorker] adding event listener for activate... ');
+
+    // don't run anything else until the tripwire is triggered
+    await intervalPromise;
+    console.log(
+      `[serviceWorker] tripwire triggered: notificationInterval is now ${notificationInterval}`
+    );
+
     const subscription = await self.registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array('BOdW06v7GXcA5HcaRNVc-eozeQ_f9y9o4_s7qCrWxQw8ldEWOZsvsxX8RtO7R4iHTOXCYt9scZbLyMORoS4xDuM'), // populated at build time by vite pre-build hook
+      applicationServerKey: urlBase64ToUint8Array(
+        'BOdW06v7GXcA5HcaRNVc-eozeQ_f9y9o4_s7qCrWxQw8ldEWOZsvsxX8RtO7R4iHTOXCYt9scZbLyMORoS4xDuM'
+      ), // populated at build time by vite pre-build hook
     });
     console.log('[serviceWorker] subscribed to push: ', subscription);
 
@@ -70,9 +92,7 @@ self.addEventListener('push', (e) => {
       body: e.data?.text(),
       tag: 'workday-tracker',
       icon: new URL('/favicon.ico', self.location.origin).href,
-      actions: [
-        { action: 'go-to-dashboard', title: 'Go to dashboard' },
-      ],
+      actions: [{ action: 'go-to-dashboard', title: 'Go to dashboard' }],
     });
   } catch (error) {
     console.error(

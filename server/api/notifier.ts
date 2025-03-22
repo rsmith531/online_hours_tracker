@@ -1,18 +1,18 @@
 // ~/server/api/notifier.ts
 
 import webpush, { type PushSubscription } from 'web-push';
-import { ActivityType } from '~/composables/workdayService';
+import { ActivityType } from '../../composables/workdayService'; // is this the problem?
 import {
   getOpenSession,
   getSegmentsForSession,
-} from '~/utils/db/queries/workday';
+} from '../../utils/db/queries/workday';
 import {
   getSubscribersToNotify,
   subscribe,
   unsubscribe,
-  updateSubscriberIntervalByEndpoint,
+  updateSubscriberByEndpoint,
   updateSubscriberTargetTimeByEndpoint,
-} from '~/utils/db/queries/subscribers';
+} from '../../utils/db/queries/subscribers';
 
 export type NotifierApiRequest = {
   subscription: PushSubscription;
@@ -51,6 +51,8 @@ export default defineEventHandler(async (event) => {
 
   try {
     const requestBody = await readBody<NotifierApiRequest>(event);
+
+    console.log(`[api/notifier ${event.method}] request body: `, requestBody);
     switch (event.method) {
       case 'POST': {
         // create-subscription: add the new subscriber to the subscribers
@@ -75,10 +77,14 @@ export default defineEventHandler(async (event) => {
       case 'PATCH': {
         // update-subscription: look up the subscriber and change the interval to the new interval
         if (requestBody.interval && requestBody.subscription) {
-          await updateSubscriberIntervalByEndpoint(
-            requestBody.subscription.endpoint,
-            await getNextNotificationTime(Number(requestBody.interval))
-          );
+          await updateSubscriberByEndpoint(requestBody.subscription.endpoint, {
+            // update the interval to the newly provided interval
+            interval: Number(requestBody.interval),
+            // update the target notification time using the new interval and the current working duration
+            targetNotificationTime: await getNextNotificationTime(
+              Number(requestBody.interval)
+            ),
+          });
           return;
         }
         throw new Error('Invalid PATCH request.');
@@ -110,14 +116,14 @@ export default defineEventHandler(async (event) => {
 });
 
 /**
- * Gets subscribers whose target notification time is less 
+ * Gets subscribers whose target notification time is less
  * than the total current working time and concurrently sends
  * them a push notification.
- * 
+ *
  * Afterwards, updates the subscriber's target time to the
  * next time on their preferred interval.
- * 
- * If a delivery fails, removes the subscriber to avoid 
+ *
+ * If a delivery fails, removes the subscriber to avoid
  * bothering them with more unwanted notifications.
  */
 async function checkAndSendNotifications() {
@@ -127,7 +133,6 @@ async function checkAndSendNotifications() {
   // concurrently send notifications to all the subscribers ready for one
   await Promise.all(
     subscribers.map(async (subscriber) => {
-
       try {
         await webpush.sendNotification(
           subscriber,

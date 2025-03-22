@@ -1,9 +1,10 @@
 // ~/public/serviceWorker.js
 
-let notificationInterval = 60; // Default value
+let notificationInterval = 60*60; // Default value: 1hr
 
 // TODO: does the service worker unsubscribe with the push manager when it is unregistered? Does it need to?
 
+// TODO: the message is not coming in before the worker subscribes itself (it's using the default value)
 // update the notification interval when it gets the message from the server
 self.addEventListener('message', (event) => {
   try {

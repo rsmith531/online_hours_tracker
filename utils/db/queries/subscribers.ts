@@ -1,6 +1,6 @@
 // ~/utils/db/queries/subscribers.ts
 
-import { type InferInsertModel, eq, lte } from 'drizzle-orm';
+import { type InferInsertModel, type InferSelectModel, eq, lte } from 'drizzle-orm';
 import { db } from '../client';
 import { subscribers } from '../schema/subscribers';
 import type { PushSubscription } from 'web-push';
@@ -22,13 +22,13 @@ export async function unsubscribe(
   await db.delete(subscribers).where(eq(subscribers.endpoint, subscriber));
 }
 
-export async function updateSubscriberIntervalByEndpoint(
+export async function updateSubscriberByEndpoint(
   endpoint: typeof subscribers.$inferSelect.endpoint,
-  interval: typeof subscribers.$inferSelect.interval
+  subscriber: Partial<Omit<InferSelectModel<typeof subscribers>, 'endpoint'>>
 ): Promise<void> {
   await db
     .update(subscribers)
-    .set({ interval: interval })
+    .set({ ...subscriber })
     .where(eq(subscribers.endpoint, endpoint));
 }
 
@@ -40,6 +40,22 @@ export async function updateSubscriberTargetTimeByEndpoint(
     .update(subscribers)
     .set({ targetNotificationTime: target })
     .where(eq(subscribers.endpoint, endpoint));
+}
+
+export async function updateSubscriberTargetTimes(): Promise<void> {
+  const allSubscribers = await db
+    .select({ id: subscribers.id, interval: subscribers.interval })
+    .from(subscribers);
+
+  await Promise.all(
+    allSubscribers.map(async (subscriber) => {
+      // const newTargetTime = await getNextNotificationTime(subscriber.interval);
+      // await db
+      //   .update(subscribers)
+      //   .set({ targetNotificationTime: newTargetTime })
+      //   .where(eq(subscribers.id, subscriber.id));
+    })
+  );
 }
 
 /**

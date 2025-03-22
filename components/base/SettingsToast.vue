@@ -13,7 +13,7 @@
           contentContainer: { style: { width: 'fit-content' } }
         }">
           <SelectButton :modelValue="notificationSelectValue" @change="onNotificationOnChange" size="small"
-            :options="options" :invalid="notificationSelectValue === null" :style="{
+            :options="options" :invalid="notificationSelectValue === null" :disabled="doneLoading" :style="{
               border: '1px solid var(--p-inputtext-border-color)'
             }" />
           <IftaLabel>
@@ -45,7 +45,7 @@ const notificationSelectValue = computed({
   },
 });
 
-const onNotificationOnChange = (event) => {
+const onNotificationOnChange = async (event) => {
   doneLoading.value = true;
   const newValue = event.value;
   if (newValue === 'On') {
@@ -61,6 +61,8 @@ const onNotificationOnChange = (event) => {
   else {
     throw new Error('Something went wrong while trying to set the notificationsOn setting.')
   }
+  // TODO: tie this to the actual completion of the fetch request
+  await new Promise(resolve => setTimeout(resolve, 500));
   doneLoading.value = false;
 };
 

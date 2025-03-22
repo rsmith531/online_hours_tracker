@@ -81,6 +81,7 @@ export async function getSubscribersToNotify(
   (PushSubscription & {
     targetNotificationTime: typeof subscribers.$inferSelect.targetNotificationTime;
     interval: typeof subscribers.$inferSelect.interval;
+    id: typeof subscribers.$inferSelect.id;
   })[]
 > {
   return await db
@@ -90,6 +91,7 @@ export async function getSubscribersToNotify(
       expirationTime: subscribers.expirationTime,
       targetNotificationTime: subscribers.targetNotificationTime,
       interval: subscribers.interval,
+      id: subscribers.id
     })
     .from(subscribers)
     .where(lte(subscribers.targetNotificationTime, targetNotificationTime));

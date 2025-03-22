@@ -45,7 +45,7 @@
 tl,dr to update to the latest commit:
 
 ```bash
-eval `ssh-agent -s` && ssh-add ~/projects/workday_tracker/git_ssh_key && cd ~/projects/workday_tracker/01_my_instance && git pull && npm i && npm run build && pm2 restart ../ecosystem.config.cjs || echo "One or more commands failed."
+eval `ssh-agent -s` && ssh-add ~/projects/workday_tracker/git_ssh_key && cd ~/projects/workday_tracker/03_test_instance && git pull && npm i && npm run build && pm2 restart ../ecosystem.config.cjs || echo "One or more commands failed."
 ```
 
 or, if your SSH agent is already configured:

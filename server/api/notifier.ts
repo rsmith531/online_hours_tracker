@@ -19,8 +19,6 @@ export type NotifierApiRequest = {
   interval?: number; // in seconds
 };
 
-// TODO: if the workday stops and a new one begins, do the subscribers' target notification intervals change back from whatever it was for the last workday to what it needs to be for the new workday? e.g. if the last workday was at 8 hrs, the next hourly notification would be hour 9, but for the new workday should be hour 1
-
 export default defineEventHandler(async (event) => {
   // check if request is authorized, throws 401 if not
   await requireUserSession(event);
@@ -149,18 +147,22 @@ async function checkAndSendNotifications() {
           `You have been working for ${formatDuration(totalWorkingDuration)}`
         );
       } catch (error) {
-        console.error('Failed to send notification:', error);
+        console.error('[api/notifier] Failed to send notification:', error);
         if (typeof error === 'object') {
-          console.error({...error})
+          console.error({ ...error });
         }
 
         if (error instanceof webpush.WebPushError && error.statusCode === 410) {
           // try deleting the subscriber from the list since they are no longer subscribed
           // https://autopush.readthedocs.io/en/latest/http.html#error-codes
-          await $fetch('/api/notifier', {
-            method: 'DELETE',
-            body: { subscription: subscriber },
-          });
+          try {
+            await unsubscribe(subscriber.endpoint);
+          } catch (unsubError) {
+            console.error(
+              `[api/notifier] Failed to remove unsubscribed tuple ${subscriber.id}: `,
+              unsubError
+            );
+          }
         }
       }
 

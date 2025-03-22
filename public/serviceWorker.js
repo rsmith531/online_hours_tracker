@@ -2,6 +2,8 @@
 
 let notificationInterval = 60; // Default value
 
+// TODO: does the service worker unsubscribe with the push manager when it is unregistered? Does it need to?
+
 // update the notification interval when it gets the message from the server
 self.addEventListener('message', (event) => {
   try {

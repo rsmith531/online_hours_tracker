@@ -30,10 +30,13 @@ export async function updateSubscriberByEndpoint(
   endpoint: typeof subscribers.$inferSelect.endpoint,
   subscriber: Partial<Omit<InferSelectModel<typeof subscribers>, 'endpoint'>>
 ): Promise<void> {
-  await db
+  const response = await db
     .update(subscribers)
     .set({ ...subscriber })
     .where(eq(subscribers.endpoint, endpoint));
+if (response.changes === 0) {
+  throw new Error('[updateSubscriberByEndpoint] could not find subscriber to update', {cause: 'subscriber not found'})
+}
 }
 
 export async function updateSubscriberTargetTimeByEndpoint(

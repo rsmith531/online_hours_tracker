@@ -77,15 +77,25 @@ export default defineEventHandler(async (event) => {
       case 'PATCH': {
         // update-subscription: look up the subscriber and change the interval to the new interval
         if (requestBody.interval && requestBody.subscription) {
-          await updateSubscriberByEndpoint(requestBody.subscription.endpoint, {
-            // update the interval to the newly provided interval
-            interval: Number(requestBody.interval),
-            // update the target notification time using the new interval and the current working duration
-            targetNotificationTime: await getNextNotificationTime(
-              Number(requestBody.interval)
-            ),
-          });
-          return;
+          try {
+            await updateSubscriberByEndpoint(
+              requestBody.subscription.endpoint,
+              {
+                // update the interval to the newly provided interval
+                interval: Number(requestBody.interval),
+                // update the target notification time using the new interval and the current working duration
+                targetNotificationTime: await getNextNotificationTime(
+                  Number(requestBody.interval)
+                ),
+              }
+            );
+            return;
+          } catch (error) {
+            console.warn(
+              '[api/notifier PATCH] could not find subscriber: ',
+              error
+            );
+          }
         }
         throw new Error('Invalid PATCH request.');
       }
@@ -210,18 +220,16 @@ async function getNextNotificationTime(interval: number): Promise<number> {
 
 /**
  * @param {number} totalWorkingDuration the active working time **in seconds**
- * @returns {string} the duration formatted like HH:mm:ss
+ * @returns {string} the duration formatted like HH:mm
  */
 function formatDuration(totalWorkingDuration: number): string {
   const hours = Math.floor(totalWorkingDuration / 3600);
   const minutes = Math.floor((totalWorkingDuration % 3600) / 60);
-  const seconds = totalWorkingDuration % 60;
 
   const formattedHours = String(hours).padStart(2, '0');
   const formattedMinutes = String(minutes).padStart(2, '0');
-  const formattedSeconds = String(seconds).padStart(2, '0');
 
-  return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+  return `${formattedHours}:${formattedMinutes}`;
 }
 
 // check every minute if a notification should be sent

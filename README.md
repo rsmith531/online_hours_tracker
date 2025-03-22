@@ -64,9 +64,11 @@ One last note on Nuxt: all of its configuration lives [in one file](https://nuxt
 
 "Real" databases take a bit of work to stand up and maintain. The small scale of my project meant I got to skip all that and use [**SQLite**](https://www.sqlite.org/whentouse.html), which puts the whole database in a couple little files. The actual implementation of that was made even easier with the excellent [**`better-sqlite3`**](https://github.com/WiseLibs/better-sqlite3) library. Using [**Vue query**](https://tanstack.com/query/v5/docs/framework/vue/overview), all parts of the platform could access and update the data through an API endpoint from a centralized location that also provided some very neat caching and other optimizing abilities.
 
+To make the database a little easier to work with in Typescript, I chose [**Drizzle**](https://orm.drizzle.team/) for my [ORM](https://en.wikipedia.org/wiki/Object%E2%80%93relational_mapping). I originally started the project without it, so when I integrated it, the code clarity improved drastically and allowed me to type my function signatures to match the types representing the database objects. Now, if the underlying schema changes, I will see how those changes impact the performance of its use across the codebase in the way of type errors.
+
 An interesting implementation detail I had to tackle was how I would persist a user's site settings across sessions. One approach is to save their settings to a table in the database. However, this meant that their settings would be the same across all devices they used to access the platform. I wanted to let the user configure their site settings by device. It gave me a great opportunity to explore the [Window API's **local storage**](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage) feature. I used it to store the settings on the browser in a manner that would stick around until the user cleared their cache.
 
-At some point (probably when my data needs grow too complex for SQLite), I'd like to migrate to using an ORM like [Drizzle](https://orm.drizzle.team/) and a [PostgreSQL database](https://www.postgresql.org/), possibly implemented with a self-hosted [Supabase](https://supabase.com/docs/guides/self-hosting) instance.
+When my data needs grow too complex for SQLite, I'd like to migrate to a [PostgreSQL database](https://www.postgresql.org/), possibly implemented with a self-hosted [Supabase](https://supabase.com/docs/guides/self-hosting) instance.
 
 ### Push notifications
 
@@ -74,7 +76,7 @@ Did you know browsers can't run Typescript files? I didn't. Or maybe, I knew sub
 
 I wanted users to have the option to enable periodic notifications that remind them of how long their workday has been open, even when they didn't have the website open in the browser. To send the notification from the server, I accessed the [Web Push Protocol](https://datatracker.ietf.org/doc/html/draft-ietf-webpush-protocol) via the [**`web-push`**](https://www.npmjs.com/package/web-push) library.  To display the notification, the browser gives me the [**Push API**](https://developer.mozilla.org/en-US/docs/Web/API/Push_API). These two technologies made the implementation relatively painless.
 
-The interesting part is the "even when they didn't have the website open in the browser" part. To do this, I had to write code to register (install) a Javascript file (service worker) that would run on the browser in a separate thread to listen to the server for incoming notifications and display them to the user.
+The interesting part is the "even when they didn't have the website open in the browser" part. To do this, I had to write code to register (install) a Javascript file (service worker) that would run on the browser in a separate thread to listen to the server for incoming notifications and display them to the user. That file was a bit of a challenge to debug, because its console logs don't go to the normal client console and the worker decides when to run once it is registered. Firefox has [additional dev tools](about:debugging#/runtime/this-firefox) that show the registered workers, and you can use that to open a console specific to a service worker, but only when it is running.
 
 ### Live updates
 
@@ -85,6 +87,18 @@ A feature that was not initially on my roadmap, but snuck its way onto it when I
 Enter: [websockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API).
 
 Traditionally, the only time the server talks to a client is when the client sends a request. A websocket is basically a two-way persisting connection between a client and a server. This means the server can initiate a request to give the client some new information. The technology apparently has some caveats and implementation details that are all nicely abstracted away by [**socket.io**](https://socket.io/). I applied this capability to advise all of the server's websocket-connected clients that it has new information for them.
+
+### Timeline
+
+When I first dreamt up the idea of showing a live summary of the workday, I had a few design requirements in my head: 
+
+- Represent the active and paused segments of the workday.
+- Represent when the user is working past the estimated 8 hour workday.
+- Label the start, current, and estimated end points on the line.
+
+Trying to stick with my existing libraries, I looked at Primevue's [Timeline](https://primevue.org/timeline/) first, but the points were evenly spaced, and you could not change the spacing to show relative differences in segment lengths. Then I thought, "What if I used a line chart with points whose *y*-value is constant?" That would get me a straight line with varying spacing between the points. I would just need to find a way to show the line without showing the chart. Research led me to [Chart.js](https://www.chartjs.org/docs/latest/charts/line.html), but it seemed like too much of the implementation was abstracted away for me to extract the line from the line chart. It's a very "batteries included" package where the customization is limited to the methods provided by the package.
+
+I landed on [**D3.js**](https://d3js.org/d3-shape/line). There's [a lot of mixed emotions](https://www.reddit.com/r/d3js/comments/1230xcm/d3_is_going_to_be_made_irrelevant_by_its/) about this older package, but it felt like a box of Legos you could use to piece together some really unique builds. The library was designed during a time before front-end frameworks really embraced reactivity and virtual DOMs, so it took a little haranguing to get it working right in Vue. I'm not convinced my implementation is the most efficient or cleanest, but it sure does look nifty and perfectly achieves the design requirements I set out with.
 
 ### Security
 
@@ -148,28 +162,29 @@ This document you are viewing right now is actually [my project's README.md](htt
 
 - [ ] Fully type the project and correct type errors.
     - [ ] API endpoints through [`zod`](https://zod.dev/?id=introduction).
-    - [ ] Database queries through [`kysely`](https://kysely.dev/docs/getting-started).
+    - [ ] ~~Database queries through [`kysely`](https://kysely.dev/docs/getting-started).~~ Not necessary now that I use an ORM.
     - [x] Harness Nuxt and Vue TypeScript capabilities.
-- [ ] Turn off Nuxt auto-imports.
-    - [ ] There is too much involved in this to make it viable for a personal project at this stage.
+- [ ] ~~Turn off Nuxt auto-imports.~~ There is too much involved in this to make it viable for a personal project at this stage.
 - [ ] Write comprehensive test suites (one day).
 - [ ] Create a CI/CD pipeline.
 - [x] Upgrade the push notification to take you to the site when you click it.
 - [x] Dark mode 😎
 - [x] Live workday status updates via `socket.io` and websockets.
+- [ ] implement [nuxt-api-shield](https://nuxt.com/modules/api-shield)
 
 ### v1.2.0
 
-- [ ] Workday Timeline feature.
-    - [ ] Probably use [Chart.js line chart](https://www.chartjs.org/docs/latest/charts/line.html) but without the chart.
+- [x] Workday Timeline feature.
+    - [ ] ~~Probably use [Chart.js line chart](https://www.chartjs.org/docs/latest/charts/line.html) but without the chart.~~ Actually ended up with [a D3.js line chart](https://observablehq.com/@d3/line-chart/2)
 
 ### v1.3.0
 
 - [ ] Migrate from SQLite to a PostgreSQL database.
     - [ ] Possible implementation of a self-hosted [Supabase](https://supabase.com/docs/guides/self-hosting) instance.
-    - [ ] Use an ORM library like [Drizzle](https://orm.drizzle.team/).
+    - [x] Use an ORM library like [Drizzle](https://orm.drizzle.team/).
 - [ ] Workday data editor.
     - [ ] Implemented through the [PrimeVue DataTable component](https://primevue.org/datatable/).
+    - [ ] download data as csv button.
 
 ### v1.4.0
 

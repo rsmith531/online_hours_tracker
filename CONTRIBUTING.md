@@ -19,6 +19,12 @@
     NUXT_LOGIN_USERNAME=choose_your_username
     NUXT_LOGIN_PASSWORD=choose_your_password
     NUXT_PUBLIC_LOGIN_NAME=choose_your_name
+
+    # for the socket.io transmissions to stay siloed in its own project instance
+    NUXT_PUBLIC_SOCKET_NAMESPACE=/dev
+
+    # drizzle orm
+    NUXT_DB_FILE_NAME=workday_data.sqlite
     ```
 
 5. Create the required TLS certificates to run as HTTPS:
@@ -29,37 +35,20 @@
    - Local: `npm run dev`
    - Network: `npm run dev-secure`
 
-# TODO
-
-- [ ] figure out if I can load primevue stylesheet on server to avoid FOUC
-- [ ] implement [nuxt-api-shield](https://nuxt.com/modules/api-shield)
-- [ ] make my APIs type-safe (with [zod](https://zod.dev/?id=installation)?)
-- [ ] Use an ORM for `db.ts`
-- [ ] add a timeline to summarize the 24hr period
-    - Start time, 8 hr mark, break periods, current time
-- [ ] download data as csv button
-- [ ] write test suites
-
 # Deployment
 
 tl,dr to update to the latest commit:
 
 ```bash
-eval `ssh-agent -s` && ssh-add ~/projects/workday_tracker/git_ssh_key && cd ~/projects/workday_tracker/03_test_instance && git pull && npm i && npm run build && pm2 restart ../ecosystem.config.cjs || echo "One or more commands failed."
+eval `ssh-agent -s` && ssh-add ~/projects/workday_tracker/git_ssh_key && cd ~/projects/workday_tracker/03_test_instance && git pull && npm i && npm run build && pm2 start ../ecosystem.config.cjs || echo "One or more commands failed."
 ```
 
 or, if your SSH agent is already configured:
 
 ```bash
-# for my instance
+# for test instance
 
-cd ~/projects/workday_tracker/01_my_instance && git pull && npm run build && pm2 restart ../ecosystem.config.cjs || echo "One or more commands failed."
-```
-
-```bash
-# for demo instance
-
-cd ~/projects/workday_tracker/02_demo_instance && git pull && npm run build && pm2 restart ../ecosystem.config.cjs || echo "One or more commands failed."
+cd ~/projects/workday_tracker/03_test_instance && git pull && npm run build && pm2 start ../ecosystem.config.cjs || echo "One or more commands failed."
 ```
 
 1. Using PuTTY or another SSH client, tunnel into the hosted VPS.
@@ -116,7 +105,7 @@ cd ~/projects/workday_tracker/02_demo_instance && git pull && npm run build && p
 3. Create and [configure](#L9) a `.env` file.
     - Set `NUXT_PUBLIC_ENVIRONMENT` to `production`.
 
-4. Follow the [remaining deployment steps](#L90).
+4. Follow the [remaining deployment steps](#L99).
 
 ### Reconfiguring Caddy
 
@@ -126,24 +115,24 @@ Here's an example Caddyfile:
 # Caddyfile
 
 lupine.roamers.rest {
-    reverse_proxy /socket.io/* :3001
+    reverse_proxy /socket.io/* :4001
     reverse_proxy :3001
 }
 
 test.roamers.rest {
-    reverse_proxy /socket.io/* :3002
+    reverse_proxy /socket.io/* :4002
     reverse_proxy :3002
 }
 
 demo.roamers.rest, www.roamers.rest, roamers.rest {
-    reverse_proxy /socket.io/* :3000
+    reverse_proxy /socket.io/* :4000
     reverse_proxy :3000
 }
 ```
 
 The file lives at `~/Caddyfile`, in the `root` directory of the VPS.
 
-1. Add a case to the `handle` and `handle_path` switches for the new subdomain.
+1. Add the new subdomain and appropriately assign ports to it
 
 2. Run `caddy fmt --overwrite` to make sure the new file is formatted correctly.
 
@@ -228,11 +217,14 @@ module.exports = {
 
 The file lives at `~/projects/workday_tracker/ecosystem.config.cjs`.
 
-1. Add a new app object to the array with a unique `name`.
+1. Add a new app object to the array with a unique `name` 
 
-2. Set the port to an available port.
+2. Set the `cwd` to the path of the project installation.
 
-3. Change the script to the Nuxt build output in the new instance directory.
+3. Set the port to an available port matching the one in the Caddyfile.
 
 4. Update the log file paths.
 
+5. Set environment variables where appropriate.
+
+6. Don't forget to run `pm2 start ecosystem.config.cjs` from the `/workday_tracker` directory for the changes to take effect.

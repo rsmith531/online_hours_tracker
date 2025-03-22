@@ -32,11 +32,13 @@ export default defineNuxtPlugin({
                 'This browser does not support push notifications.'
               );
             }
-            console.info(
+            console.log(
               '[notificationsService] browser compatibility check PASSED'
             );
 
-            console.log(`[notifications] browser's notifications set to ${Notification.permission}`)
+            console.log(
+              `[notifications] browser's notifications set to ${Notification.permission}`
+            );
 
             // next, check if notifications permissions have been granted
             switch (Notification.permission) {
@@ -63,24 +65,26 @@ export default defineNuxtPlugin({
                 );
               }
             }
-            console.info(
-              '[notificationsService] browser notifications ENABLED'
-            );
+            console.log('[notificationsService] browser notifications ENABLED');
 
             // register the service worker from serviceWorker.ts (if previously registered, it will update the registration)
             serviceWorkerRegistration =
               await navigator.serviceWorker.register('/serviceWorker.js');
-            console.info('[notificationsService] service worker REGISTERED');
+            console.log('[notificationsService] service worker REGISTERED');
 
-            // Send the initial interval to the service worker
-            navigator.serviceWorker.ready.then((registration) => {
-              if (registration.active) {
-                registration.active.postMessage({
+            // Send the initial interval to the service worker after a 100ms delay to wait for it to become active
+            setTimeout(() => {
+              console.log(
+                '[notificationsService] serviceWorkerRegistration before trying to send the message: ',
+                serviceWorkerRegistration
+              );
+              if (serviceWorkerRegistration.active) {
+                serviceWorkerRegistration.active.postMessage({
                   type: 'initialNotificationInterval',
                   // @ts-expect-error I'm calling this a Nuxt problem. I did what the docs described and it doesn't fix it
                   interval: $siteSettings.getNotificationInterval(),
                 });
-                console.info(
+                console.log(
                   '[notificationsService] service worker interval UPDATED'
                 );
               } else {
@@ -88,7 +92,7 @@ export default defineNuxtPlugin({
                   '[notificationsService] could not update service worker interval'
                 );
               }
-            });
+            }, 100); // 100ms delay
 
             // send toast telling users to make sure to revoke notifications permissions
             ToastEventBus.emit('add', {
@@ -103,7 +107,7 @@ export default defineNuxtPlugin({
               error
             );
             // set notificationsOn to false
-                  // @ts-expect-error I'm calling this a Nuxt problem. I did what the docs described and it doesn't fix it
+            // @ts-expect-error I'm calling this a Nuxt problem. I did what the docs described and it doesn't fix it
             $siteSettings.setNotificationsOn(false);
 
             // rethrow error to the next catch that adds a toast
@@ -127,7 +131,7 @@ export default defineNuxtPlugin({
                 '[notificationsService] sending requestBody to /api/notifier via DELETE: ',
                 requestBody
               );
-              await fetch('/api/notifier', {
+              await $fetch('/api/notifier', {
                 method: 'DELETE',
                 headers: {
                   'Content-Type': 'application/json',
@@ -141,8 +145,12 @@ export default defineNuxtPlugin({
             throw new Error('Service worker not ready.');
           }
           // deregister the service worker from serviceWorker.ts
+          console.log(
+            '[notificationsService] unregistering service worker: ',
+            serviceWorkerRegistration
+          );
           if (serviceWorkerRegistration) {
-            serviceWorkerRegistration.unregister();
+            await serviceWorkerRegistration.unregister();
           }
           // send toast telling users to make sure to revoke notifications permissions
           ToastEventBus.emit('add', {
@@ -196,7 +204,7 @@ export default defineNuxtPlugin({
                 '[notificationsService] sending requestBody to /api/notifier via PATCH: ',
                 requestBody
               );
-              await fetch('/api/notifier', {
+              await $fetch('/api/notifier', {
                 method: 'PATCH',
                 headers: {
                   'Content-Type': 'application/json',

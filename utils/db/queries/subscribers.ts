@@ -19,7 +19,11 @@ export async function subscribe(
 export async function unsubscribe(
   subscriber: typeof subscribers.$inferSelect.endpoint
 ): Promise<void> {
-  await db.delete(subscribers).where(eq(subscribers.endpoint, subscriber));
+  const response = await db.delete(subscribers).where(eq(subscribers.endpoint, subscriber));
+  
+  if (response.changes === 0) {
+    console.warn('[unsubscribe] did not find subscriber with matching endpoint')
+  }
 }
 
 export async function updateSubscriberByEndpoint(

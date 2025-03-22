@@ -234,14 +234,14 @@ export default defineNuxtPlugin({
     watch(
       // @ts-expect-error I'm calling this a Nuxt problem. I did what the docs described and it doesn't fix it
       () => $siteSettings.getNotificationsOn(),
-      (newValue) => handleNotificationsChange(newValue)
+      async (newValue) => await handleNotificationsChange(newValue)
     );
 
     // listen to the siteSettingsService for the settings.notificationInterval to change
     watch(
       // @ts-expect-error I'm calling this a Nuxt problem. I did what the docs described and it doesn't fix it
       () => $siteSettings.getNotificationInterval(),
-      (newValue) => handleNotificationIntervalChange(newValue)
+      async (newValue) => await handleNotificationIntervalChange(newValue)
     );
   },
 });

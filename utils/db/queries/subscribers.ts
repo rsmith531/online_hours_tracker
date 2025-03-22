@@ -1,6 +1,11 @@
 // ~/utils/db/queries/subscribers.ts
 
-import { type InferInsertModel, type InferSelectModel, eq, lte } from 'drizzle-orm';
+import {
+  type InferInsertModel,
+  type InferSelectModel,
+  eq,
+  lte,
+} from 'drizzle-orm';
 import { db } from '../client';
 import { subscribers } from '../schema/subscribers';
 import type { PushSubscription } from 'web-push';
@@ -19,10 +24,14 @@ export async function subscribe(
 export async function unsubscribe(
   subscriber: typeof subscribers.$inferSelect.endpoint
 ): Promise<void> {
-  const response = await db.delete(subscribers).where(eq(subscribers.endpoint, subscriber));
-  
+  const response = await db
+    .delete(subscribers)
+    .where(eq(subscribers.endpoint, subscriber));
+
   if (response.changes === 0) {
-    console.warn('[unsubscribe] did not find subscriber with matching endpoint')
+    console.warn(
+      '[unsubscribe] did not find subscriber with matching endpoint'
+    );
   }
 }
 
@@ -34,9 +43,12 @@ export async function updateSubscriberByEndpoint(
     .update(subscribers)
     .set({ ...subscriber })
     .where(eq(subscribers.endpoint, endpoint));
-if (response.changes === 0) {
-  throw new Error('[updateSubscriberByEndpoint] could not find subscriber to update', {cause: 'subscriber not found'})
-}
+  if (response.changes === 0) {
+    throw new Error(
+      '[updateSubscriberByEndpoint] could not find subscriber to update',
+      { cause: 'subscriber not found' }
+    );
+  }
 }
 
 export async function updateSubscriberTargetTimeByEndpoint(
@@ -49,20 +61,14 @@ export async function updateSubscriberTargetTimeByEndpoint(
     .where(eq(subscribers.endpoint, endpoint));
 }
 
-export async function updateSubscriberTargetTimes(): Promise<void> {
-  const allSubscribers = await db
-    .select({ id: subscribers.id, interval: subscribers.interval })
-    .from(subscribers);
-
-  await Promise.all(
-    allSubscribers.map(async (subscriber) => {
-      // const newTargetTime = await getNextNotificationTime(subscriber.interval);
-      // await db
-      //   .update(subscribers)
-      //   .set({ targetNotificationTime: newTargetTime })
-      //   .where(eq(subscribers.id, subscriber.id));
-    })
-  );
+/**
+ * Sets every row's targetNotificationTime back to its interval. This
+ * can be used when a new workday is opened to make all the 
+ */
+export async function resetSubscriberTargetTimes(): Promise<void> {
+  await db
+    .update(subscribers)
+    .set({ targetNotificationTime: subscribers.interval });
 }
 
 /**

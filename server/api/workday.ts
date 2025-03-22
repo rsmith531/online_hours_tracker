@@ -13,6 +13,7 @@ import {
 } from '../../utils/db/queries/workday';
 import { ActivityType } from '../../composables/workdayService';
 import { getIO } from '../plugins/socket';
+import { resetSubscriberTargetTimes } from '../../utils/db/queries/subscribers';
 
 export interface WorkdayApiResponse {
   start_time: Date;
@@ -54,7 +55,9 @@ export default defineEventHandler(
         } else {
           const lastClosedSession = await getLastClosedSession();
           if (lastClosedSession) {
-            const sessionSegments = await getSegmentsForSession(lastClosedSession.id);
+            const sessionSegments = await getSegmentsForSession(
+              lastClosedSession.id
+            );
             response = {
               start_time: lastClosedSession.start,
               end_time: lastClosedSession.end,
@@ -134,7 +137,8 @@ export default defineEventHandler(
                   ],
                 };
 
-                // TODO: update the subscribers' target notification times to the new workday
+                // reset the subscribers' target notification times to the new workday
+                await resetSubscriberTargetTimes();
               }
 
               io.emit('workdayUpdate', response);
@@ -145,9 +149,9 @@ export default defineEventHandler(
             // pause or unpause the workday
             case 'pause': {
               if (openSession) {
-                console.log(openSession)
+                console.log(openSession);
                 const openSegment = await getOpenSegment(openSession.id);
-                console.log(openSegment)
+                console.log(openSegment);
                 if (
                   openSegment &&
                   openSegment.activity === ActivityType.Working

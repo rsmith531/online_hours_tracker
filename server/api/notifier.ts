@@ -150,6 +150,9 @@ async function checkAndSendNotifications() {
         );
       } catch (error) {
         console.error('Failed to send notification:', error);
+        if (typeof error === 'object') {
+          console.error({...error})
+        }
 
         if (error instanceof webpush.WebPushError && error.statusCode === 410) {
           // try deleting the subscriber from the list since they are no longer subscribed

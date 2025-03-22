@@ -2,7 +2,7 @@
 
 <template>
   <ClientOnly>
-    <SpeedDial v-if="workday && !isPending" :model="items" :type="$device.isMobile ? 'quarter-circle' : 'semi-circle'"
+    <SpeedDial v-if="!isPending" :model="items" :type="$device.isMobile ? 'quarter-circle' : 'semi-circle'"
       :radius="$device.isMobile ? 100 : 70" :direction="$device.isMobile ? 'up-left' : 'up'" :transitionDelay="80" style="
     position: fixed; 
     bottom: 2rem;
@@ -36,7 +36,7 @@ const {
 
 const items = computed(() => {
   // if the workday data isn't ready yet, don't try computing the buttons
-  if (isPending.value || !workday.value) {
+  if (isPending.value) {
     return [];
   }
   return [

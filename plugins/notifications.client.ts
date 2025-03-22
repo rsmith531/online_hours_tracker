@@ -120,6 +120,9 @@ export default defineNuxtPlugin({
             const subscription =
               await registration.pushManager.getSubscription();
             if (subscription) {
+              // unsubscribe from the push service
+              await subscription.unsubscribe();
+              
               const requestBody: NotifierApiRequest = {
                 // @ts-expect-error the MDN PushSubscriptionJSON interface
                 // has all its properties as optional, but they should always

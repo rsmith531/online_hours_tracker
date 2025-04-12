@@ -115,18 +115,30 @@ Here's an example Caddyfile:
 # Caddyfile
 
 lupine.roamers.rest {
-    reverse_proxy /socket.io/* :4001
+    # reverse_proxy /socket.io/* :4001
     reverse_proxy :3001
+    log {
+        output file lupine.requests.log
+        format json
+    }
 }
 
 test.roamers.rest {
-    reverse_proxy /socket.io/* :4002
+    # reverse_proxy /socket.io/* :4002
     reverse_proxy :3002
+    log {
+        output file test.requests.log
+        format json
+    }
 }
 
 demo.roamers.rest, www.roamers.rest, roamers.rest {
-    reverse_proxy /socket.io/* :4000
+    # reverse_proxy /socket.io/* :4000
     reverse_proxy :3000
+    log {
+        output file demo.requests.log
+        format json
+    }
 }
 ```
 

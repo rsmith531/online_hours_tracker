@@ -11,8 +11,8 @@
             :sortOrder="-1" paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]"
             v-model:expandedRows="expandedRows" dataKey="id" v-model:filters="filters" filterDisplay="menu"
             tableStyle="" rowHover
-            style="border-radius: 10px; overflow: clip; border: 2px solid var(--p-text-color);" class="min-w-[80vw] max-w-[90vw]" resizableColumns
-            scrollable scrollHeight="352px" exportFilename="workday_data" :exportFunction="exportData" editMode="cell"
+            style="border-radius: 10px; overflow: clip; border: 2px solid var(--p-text-color);" class="min-w-[80vw] max-w-[90vw] max-h-[78vh]" resizableColumns
+            scrollable scrollHeight="flex" exportFilename="workday_data" :exportFunction="exportData" editMode="cell"
             @cell-edit-complete="onCellEditComplete">
             <template #header>
                 <h3 class="font-bold" style="text-align: center;">

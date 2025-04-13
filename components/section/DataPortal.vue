@@ -12,7 +12,8 @@
             v-model:expandedRows="expandedRows" dataKey="id" v-model:filters="filters" filterDisplay="menu"
             tableStyle="min-width: 80vw;" rowHover
             style="border-radius: 10px; overflow: clip; border: 2px solid var(--p-text-color);" resizableColumns
-            scrollable scrollHeight="352px" exportFilename="workday_data" :exportFunction="exportData">
+            scrollable scrollHeight="352px" exportFilename="workday_data" :exportFunction="exportData" editMode="cell"
+            @cell-edit-complete="onCellEditComplete">
             <template #header>
                 <h3 class="font-bold" style="text-align: center;">
                     Workday Data Portal
@@ -41,8 +42,11 @@
                 <template #filter="{ filterModel }">
                     <DatePicker inline v-model="filterModel.value" selectionMode="range" dateFormat="mm/dd/yy" />
                 </template>
+                <template #editor="{ data, field }">
+                    <DatePicker v-model="data[field]" dateFormat="mm/dd/yy" />
+                </template>
             </Column>
-            <Column sortable field="start_time" filterField="start_time" dataType='date' header="Start"
+            <Column sortable field="start_time" header="Start" filterField="start_time" dataType='date'
                 :showFilterMatchModes="false"> <!-- showClearButton -->
                 <template #body="slotProps">
                     {{ slotProps.data.start_time
@@ -56,7 +60,7 @@
                     <div style="display: flex; flex-direction: column; gap: 1rem">
                         <FloatLabel variant="on">
                             <DatePicker inputId="start_time_start" v-model="filterModel.value[0]" timeOnly showIcon
-                                showButtonBar @update:modelValue="logEndTimeFilterStart(filterModel.value[0], 'Start')">
+                                showButtonBar>
                                 <template #dropdownicon>
                                     <i class="pi pi-clock" />
                                 </template>
@@ -65,7 +69,7 @@
                         </FloatLabel>
                         <FloatLabel variant="on">
                             <DatePicker inputId="start_time_end" v-model="filterModel.value[1]" timeOnly showIcon
-                                showButtonBar @update:modelValue="logEndTimeFilterStart(filterModel.value[1], 'End')">
+                                showButtonBar>
                                 <template #dropdownicon>
                                     <i class="pi pi-clock" />
                                 </template>
@@ -73,6 +77,9 @@
                             <label for="start_time_end">End</label>
                         </FloatLabel>
                     </div>
+                </template>
+                <template #editor="{ data, field }">
+                    <DatePicker v-model="data[field]" timeOnly />
                 </template>
             </Column>
             <Column sortable field="end_time" header="End" filterField="end_time" dataType="date"
@@ -90,7 +97,7 @@
                     <div style="display: flex; flex-direction: column; gap: 1rem">
                         <FloatLabel variant="on">
                             <DatePicker inputId="end_time_start" v-model="filterModel.value[0]" timeOnly showIcon
-                                showButtonBar @update:modelValue="logEndTimeFilterStart(filterModel.value[0], 'Start')">
+                                showButtonBar>
                                 <template #dropdownicon>
                                     <i class="pi pi-clock" />
                                 </template>
@@ -99,7 +106,7 @@
                         </FloatLabel>
                         <FloatLabel variant="on">
                             <DatePicker inputId="end_time_end" v-model="filterModel.value[1]" timeOnly showIcon
-                                showButtonBar @update:modelValue="logEndTimeFilterStart(filterModel.value[1], 'End')">
+                                showButtonBar>
                                 <template #dropdownicon>
                                     <i class="pi pi-clock" />
                                 </template>
@@ -108,6 +115,9 @@
                         </FloatLabel>
                     </div>
                 </template>
+                <template #editor="{ data, field }">
+                    <DatePicker v-model="data[field]" timeOnly />
+                </template>
             </Column>
             <Column sortable field="state" header="Status" :showFilterMatchModes="false" showClearButton>
                 <template #body="{ data }">
@@ -115,7 +125,16 @@
                 </template>
                 <template #filter="{ filterModel }">
                     <Select v-model="filterModel.value" :options="['open', 'closed']" placeholder="Select One"
-                        style="width: 100%"> <!-- showClear -->
+                        style="width: 100%">
+                        <template #option="slotProps">
+                            <Tag :value="slotProps.option"
+                                :severity="slotProps.option === 'open' ? 'success' : 'danger'" />
+                        </template>
+                    </Select>
+                </template>
+                <template #editor="{ data, field }">
+                    <Select v-model="data[field]" :options="['open', 'closed']" placeholder="Select One"
+                        style="width: 100%" size="small">
                         <template #option="slotProps">
                             <Tag :value="slotProps.option"
                                 :severity="slotProps.option === 'open' ? 'success' : 'danger'" />
@@ -371,9 +390,6 @@ const input_data = ref<tableData[]>(sessions.map((session) => {
             }
         })
     }
-
-    console.log('timestamp of end_time: ', returnObject.end_time?.getTime())
-
     return returnObject
 }))
 
@@ -388,10 +404,6 @@ const handleExpand = () => {
     } else {
         expandedRows.value = {};
     }
-};
-
-const logEndTimeFilterStart = (value: Date, version: 'Start' | 'End') => {
-    console.log(`${version} Time Filter Start Picker Value: `, value.getTime());
 };
 
 const filters = ref();
@@ -417,6 +429,63 @@ const deleteSelected = () => {
 };
 const deleteRow = (id: number) => {
     input_data.value = input_data.value.filter(val => val.id !== id);
+};
+
+// biome-ignore lint/suspicious/noExplicitAny: in this case, the type really can be anything
+const onCellEditComplete = (event: any) => {
+    let { data, newValue, field } = event;
+    console.log(event)
+
+    switch (field) {
+        case 'date': {
+            data[field] = newValue;
+            break;
+        }
+        case 'start_time': {
+            const newTime = new Date(newValue);
+            const existingDate = data[field];
+
+            // keep the existing date component of the object (and the seconds)
+            const updatedTime = new Date(
+                existingDate.getFullYear(),
+                existingDate.getMonth(),
+                existingDate.getDate(),
+                newTime.getHours(),
+                newTime.getMinutes(),
+                existingDate.getSeconds()
+            );
+            data[field] = updatedTime;
+            // TODO: also update the first segment in this data's segments array
+            break;
+        }
+        case 'end_time': {
+            const newTime = new Date(newValue);
+            const existingDate = data[field];
+
+            // keep the existing date component of the object (and the seconds)
+            const updatedTime = new Date(
+                existingDate.getFullYear(),
+                existingDate.getMonth(),
+                existingDate.getDate(),
+                newTime.getHours(),
+                newTime.getMinutes(),
+                existingDate.getSeconds()
+            );
+            data[field] = updatedTime;
+            // TODO: also update the first segment in this data's segments array
+            break;
+        }
+        case 'state': {
+            data[field] = newValue;
+            // TODO: if changing to closed, set the end_time of the session and last segment to the current time, else set them to null
+            break;
+        }
+        default: {
+            console.warn(`[onCellEditComplete] field ${field} is not handled`)
+            break;
+        }
+    }
+    console.log(`[onCellEditComplete] changed ${field} from ${data[field]} to ${newValue}`)
 };
 </script>
 

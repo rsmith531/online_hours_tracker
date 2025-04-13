@@ -127,6 +127,49 @@ function createWorkdayService() {
     placeholderData: null,
   });
 
+  // const { data: masterData } = useQuery<WorkDay[] | null>({
+  //   queryKey: ['master_work_data'],
+  //   queryFn: async (): Promise<WorkDay[] | null> => {
+  //     try {
+  //       let parsedResponse: WorkDay[] | null = null;
+  //       if (import.meta.server) {
+  //         const response = await useFetch<WorkdayApiResponse | null | H3Error>(
+  //           '/api/workday'
+  //         );
+
+  //         if (response.data.value instanceof H3Error) {
+  //           console.error(
+  //             '[workdayService] error while fetching workday from server: ',
+  //             response.data.value
+  //           );
+  //           throw new Error(response.data.value.message);
+  //         }
+  //         if (response.data.value) {
+  //         }
+  //       } else if (import.meta.client) {
+  //         const response = await $fetch<WorkdayApiResponse | null | H3Error>(
+  //           '/api/workday'
+  //         );
+
+  //         if (response instanceof H3Error) {
+  //           console.error(
+  //             '[workdayService] error while fetching workday from server: ',
+  //             response
+  //           );
+  //           throw new Error(response.message);
+  //         }
+  //       } else {
+  //         throw new Error('unexpected vue-query state');
+  //       }
+
+  //       return parsedResponse;
+  //     } catch (error) {
+  //       console.error('Error fetching workday from API: ', error);
+  //       throw error;
+  //     }
+  //   },
+  // });
+
   // mutation that stops and starts the workday
   const { mutate: updateWorkday } = useMutation<WorkDay, Error>({
     mutationFn: async (): Promise<WorkDay> => {

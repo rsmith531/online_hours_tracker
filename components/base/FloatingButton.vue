@@ -70,6 +70,11 @@ const items = computed(() => {
       ]
       : []),
     {
+      label: 'Portal', icon: 'pi pi-database', command: async () => {
+        await navigateTo('/portal');
+      }
+    },
+    {
       label: 'Sign Out', icon: 'pi pi-sign-out', command: async () => {
         const { clear } = useUserSession();
         await clear();

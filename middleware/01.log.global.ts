@@ -1,7 +1,4 @@
 // ~/middleware/01.log.global.ts
-
-// import { writeFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
-// import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 export default defineNuxtRouteMiddleware(async (to) => {
@@ -12,16 +9,18 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const fs = await import('node:fs');
   const { writeFileSync, existsSync, mkdirSync, readFileSync } = fs;
 
-  const url = await import ('node:url');
+  const url = await import('node:url');
   const { fileURLToPath } = url;
-  
+
   const logsDirectory = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
     '../logs'
   );
   const logFilePath = path.join(logsDirectory, 'requests.json');
 
-  console.log(`[middleware/requestLog] saving request log file to ${logFilePath}`)
+  console.log(
+    `[middleware/requestLog] saving request log file to ${logFilePath}`
+  );
 
   // Ensure the logs directory exists
   if (!existsSync(logsDirectory)) {
@@ -46,8 +45,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     path: to.fullPath,
     referrer: useRequestHeaders().referer || '',
     isLikelyBot: false,
-    query: Object.fromEntries(clientUrl.searchParams.entries())
-    // You can add more headers or request body information here if needed
+    query: Object.fromEntries(clientUrl.searchParams.entries()),
   };
 
   // Simple bot detection based on common bot user-agent patterns
@@ -61,7 +59,10 @@ export default defineNuxtRouteMiddleware(async (to) => {
       try {
         existingLogs = JSON.parse(fileContent);
       } catch (error) {
-        console.error('[middleware/requestLog] Error parsing existing logs:', error);
+        console.error(
+          '[middleware/requestLog] Error parsing existing logs:',
+          error
+        );
         // If parsing fails, start with a new array
         existingLogs = [];
       }

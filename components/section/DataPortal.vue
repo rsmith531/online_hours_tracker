@@ -10,8 +10,8 @@
         <DataTable :value="input_data" ref="dt" v-model:selection="selectedSessions" removable-sort sortField="date"
             :sortOrder="-1" paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]"
             v-model:expandedRows="expandedRows" dataKey="id" v-model:filters="filters" filterDisplay="menu"
-            tableStyle="min-width: 80vw;" rowHover
-            style="border-radius: 10px; overflow: clip; border: 2px solid var(--p-text-color);" resizableColumns
+            tableStyle="" rowHover
+            style="border-radius: 10px; overflow: clip; border: 2px solid var(--p-text-color);" class="min-w-[80vw] max-w-[90vw]" resizableColumns
             scrollable scrollHeight="352px" exportFilename="workday_data" :exportFunction="exportData" editMode="cell"
             @cell-edit-complete="onCellEditComplete">
             <template #header>
@@ -43,7 +43,7 @@
                     <DatePicker inline v-model="filterModel.value" selectionMode="range" dateFormat="mm/dd/yy" />
                 </template>
                 <template #editor="{ data, field }">
-                    <DatePicker v-model="data[field]" dateFormat="mm/dd/yy" />
+                    <DatePicker v-model="data[field]" dateFormat="mm/dd/yy" size="small" />
                 </template>
             </Column>
             <Column sortable field="start_time" header="Start" filterField="start_time" dataType='date'
@@ -79,7 +79,7 @@
                     </div>
                 </template>
                 <template #editor="{ data, field }">
-                    <DatePicker v-model="data[field]" timeOnly />
+                    <DatePicker v-model="data[field]" timeOnly size="small" />
                 </template>
             </Column>
             <Column sortable field="end_time" header="End" filterField="end_time" dataType="date"
@@ -116,7 +116,7 @@
                     </div>
                 </template>
                 <template #editor="{ data, field }">
-                    <DatePicker v-model="data[field]" timeOnly />
+                    <DatePicker v-model="data[field]" timeOnly size="small" />
                 </template>
             </Column>
             <Column sortable field="state" header="Status" :showFilterMatchModes="false" showClearButton>
@@ -174,7 +174,7 @@
                 </DataTable>
             </template>
             <template #footer>
-                <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+                <div style="display: flex; gap: 1rem; justify-content: space-between; align-items: center;"  class="flex-col sm:flex-row">
                     <div>{{ input_data ? input_data.length : '0' }} work sessions</div>
                     <div style="display: flex; gap: 1rem">
                         <Button label="Delete" icon="pi pi-trash" severity="danger" outlined @click="deleteSelected"

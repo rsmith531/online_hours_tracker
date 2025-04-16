@@ -7,20 +7,31 @@
         flex-grow: 1;
         justify-content: center;
         align-items: center;">
-        <DataTable :value="input_data" ref="dt" v-model:selection="selectedSessions" removable-sort sortField="date"
-            :sortOrder="-1" paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]"
+        <DataTable :value="input_data" ref="dt" v-model:selection="selectedSessions" removable-sort :loading="loading"
+            :sortField="sortField" :sortOrder="sortOrder" paginator :rows="rows" :rowsPerPageOptions="[5, 10, 20, 50]"
             v-model:expandedRows="expandedRows" dataKey="id" v-model:filters="filters" filterDisplay="menu"
-            tableStyle="" rowHover
-            style="border-radius: 10px; overflow: clip; border: 2px solid var(--p-text-color);" class="min-w-[80vw] max-w-[90vw] min-h-[78vh] max-h-[78vh]" resizableColumns
-            scrollable scrollHeight="flex" exportFilename="workday_data" :exportFunction="exportData" editMode="cell"
-            @cell-edit-complete="onCellEditComplete">
+            tableStyle="" :totalRecords="sessionTotal" rowHover
+            style="border-radius: 10px; overflow: clip; border: 2px solid var(--p-text-color);"
+            class="min-w-[80vw] max-w-[90vw] min-h-[78vh] max-h-[78vh]" resizableColumns scrollable scrollHeight="flex"
+            @page="onPage" @sort="onSort" exportFilename="workday_data" :exportFunction="exportData" editMode="cell"
+            @cell-edit-complete="onCellEditComplete" lazy>
             <template #header>
                 <h3 class="font-bold" style="text-align: center;">
                     Workday Data Portal
                 </h3>
             </template>
-            <template #empty> No data found. </template>
-            <template #loading> Loading data... </template>
+            <template #empty>
+                <div
+                    style="display: flex; flex-direction:column; gap: 1rem; justify-content: center; align-items: center; margin-top: 8rem; margin-bottom: 8rem;">
+                    <i class="pi pi-file-excel" style="font-size: 3rem;" />
+                    <p>No results. Try adjusting your filters.</p>
+                </div>
+            </template>
+            <template #loading>
+                <div style="display: flex; justify-content: center; align-items: center; ">
+                    <ProgressSpinner />
+                </div>
+            </template>
             <Column selectionMode="multiple" headerStyle="width: 3rem" :exportable="false" />
             <Column expander style="width: 5rem" :exportable="false">
                 <template #header>
@@ -174,8 +185,9 @@
                 </DataTable>
             </template>
             <template #footer>
-                <div style="display: flex; gap: 1rem; justify-content: space-between; align-items: center;"  class="flex-col sm:flex-row">
-                    <div>{{ input_data ? input_data.length : '0' }} work sessions</div>
+                <div style="display: flex; gap: 1rem; justify-content: space-between; align-items: center;"
+                    class="flex-col sm:flex-row">
+                    <div>{{ sessionTotal ? sessionTotal : '0' }} work sessions</div>
                     <div style="display: flex; gap: 1rem">
                         <Button label="Delete" icon="pi pi-trash" severity="danger" outlined @click="deleteSelected"
                             :disabled="!selectedSessions || !selectedSessions.length" size="small" />
@@ -192,6 +204,9 @@
 
 <script setup lang="ts">
 import { FilterMatchMode } from '@primevue/core/api';
+import { H3Error } from 'h3';
+import type { workDataApiResponse } from '../../server/api/workData';
+import type { DataTablePageEvent, DataTableSortEvent } from 'primevue/datatable';
 
 interface tableData {
     id: number;
@@ -207,126 +222,140 @@ interface tableData {
     }[]
 }
 
-const sessions = [
-    {
-        "id": 1,
-        "start": new Date(1742607452 * 1000),
-        "end": new Date(1742607467 * 1000),
-        "state": "closed",
-        segments: [{
-            "id": 1,
-            "start": new Date(1742607452 * 1000),
-            "end": new Date(1742607467 * 1000),
-            "activity": "working"
+// *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
+// *~*~*~*~* FETCHING & SETUP *~*~*~*~*
+// *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
 
-        }]
-    },
-    {
-        "id": 2,
-        "start": new Date(1742607477 * 1000),
-        "end": new Date(1742609125 * 1000),
-        "state": "closed",
-        segments: [{
-            "id": 2,
-            "start": new Date(1742607477 * 1000),
-            "end": new Date(1742609125 * 1000),
-            "activity": "working"
+const input_data = ref<tableData[]>([])
 
-        }]
-    },
-    {
-        "id": 3,
-        "start": new Date(1742609380 * 1000),
-        "end": new Date(1742617623 * 1000),
-        "state": "closed",
-        segments: [{
-            "id": 3,
-            "start": new Date(1742609380 * 1000),
-            "end": new Date(1742617623 * 1000),
-            "activity": "working"
+const router = useRouter();
+const route = useRoute();
+console.log('[DataPortal] got query parameters: ', route.query)
 
-        }]
-    },
-    {
-        "id": 4,
-        "start": new Date(1742617670 * 1000),
-        "end": new Date(1742618243 * 1000),
-        "state": "closed",
-        segments: [{
-            "id": 4,
-            "start": new Date(1742617670 * 1000),
-            "end": new Date(1742618243 * 1000),
-            "activity": "working"
+const rows = ref(Number(route.query.amount) || 10);
+const sortOrder = ref(route.query.order === 'desc' ? 1 : -1);
+const sortField = ref(route.query.sortby === 'date' ? 'start' : route.query.sortby as string)
+const loading = ref<boolean>(true);
 
-        }]
-    },
-    {
-        "id": 5,
-        "start": new Date(1742618248 * 1000),
-        "end": new Date(1742618355 * 1000),
-        "state": "closed",
-        segments: [{
-            "id": 5,
-            "start": new Date(1742618248 * 1000),
-            "end": new Date(1742618355 * 1000),
-            "activity": "working"
+const sessionTotal = ref<number>(0);
 
-        }]
-    },
-    {
-        "id": 6,
-        "start": new Date(1742618359 * 1000),
-        "end": new Date(1742618453 * 1000),
-        "state": "closed",
-        segments: [{
-            "id": 6,
-            "start": new Date(1742618359 * 1000),
-            "end": new Date(1742618453 * 1000),
-            "activity": "working"
+const fetchSessions = async () => {
+    if (import.meta.server) return;
 
-        }]
-    },
-    {
-        "id": 7,
-        "start": new Date(1742618455 * 1000),
-        "end": new Date(1742618791 * 1000),
-        "state": "closed",
-        segments: [{
-            "id": 7,
-            "start": new Date(1742618455 * 1000),
-            "end": new Date(1742618791 * 1000),
-            "activity": "working"
+    let loadingTimeout: NodeJS.Timeout | null = null;
 
-        }]
-    },
-    {
-        "id": 8,
-        "start": new Date(1742618794 * 1000),
-        "end": new Date(1744475014 * 1000),
-        "state": "closed",
-        segments: [{
-            "id": 8,
-            "start": new Date(1742618794 * 1000),
-            "end": new Date(1744475014 * 1000),
-            "activity": "working"
+    // Set a timeout to set loading to true after 300ms
+    const startLoading = () => {
+        loadingTimeout = setTimeout(() => {
+            loading.value = true;
+        }, 300);
+    };
 
-        }]
-    },
-    {
-        "id": 9,
-        "start": new Date(1744475016 * 1000),
-        "end": null,
-        "state": "open",
-        segments: [{
-            "id": 9,
-            "session_id": 9,
-            "start": new Date(1744475016 * 1000),
-            "end": null,
-            "activity": "working"
+    // Clear the timeout if the fetch completes quickly
+    const clearLoadingTimeout = () => {
+        if (loadingTimeout) {
+            clearTimeout(loadingTimeout);
+            loadingTimeout = null;
+        }
+    };
 
-        }]
+    startLoading(); // Start the loading timer
+
+    // add the query params to fetch enough data for one configured page in the datatable
+    const queryParams = new URLSearchParams();
+    queryParams.append('sortby', route.query.sortby as string ?? 'start')
+    queryParams.append('order', route.query.order as string ?? 'desc')
+    queryParams.append('amount', route.query.amount as string ?? '10')
+    queryParams.append('page', route.query.page as string ?? '1')
+    queryParams.append('timezoneOffset', String(new Date().getTimezoneOffset()))
+
+    console.log('[DataPortal] sending query params: ', queryParams)
+
+    try {
+        // do the fetch
+        const sessions = await $fetch<workDataApiResponse | null | H3Error>(
+            `/api/workData?${queryParams.toString()}`
+        );
+
+        // check the fetch response for errors
+        if (sessions instanceof H3Error) {
+            console.error(
+                '[DataPortal] error while fetching work data from server: ',
+                sessions
+            );
+            throw new Error(sessions.message);
+        }
+
+        console.log('got sessions: ', sessions)
+
+        // destructure sessions
+        const [sessionData, totalSessions] = sessions ?? [null, null]
+        sessionTotal.value = totalSessions ?? 0
+
+        const today = new Date();
+        // use the UTC date because the DatePicker seems to be working in UTC
+        const currentYear = today.getUTCFullYear();
+        const currentMonth = today.getUTCMonth();
+        const currentDay = today.getUTCDate();
+
+        // put the fetch results into the input_data ref for the datatable
+        input_data.value = sessionData ? sessionData.map((session) => {
+
+            // dates come in as strings, so turn them back into Date objects
+            const startAsDate = new Date(session.start)
+            const endAsDate = session.end ? new Date(session.end) : null
+
+            const returnObject = {
+                id: session.id,
+                date: startAsDate,
+                // normalize the date part of these objects to UTC today so the time filter works correctly
+                start_time: new Date(currentYear, currentMonth, currentDay, startAsDate.getHours(), startAsDate.getMinutes(), startAsDate.getSeconds(), startAsDate.getMilliseconds()),
+                end_time: endAsDate ? new Date(currentYear, currentMonth, currentDay, endAsDate.getHours(), endAsDate.getMinutes(), endAsDate.getSeconds(), endAsDate.getMilliseconds()) : null,
+                state: session.state as "closed" | "open",
+                segments: session.segments.map((segment) => {
+                    return {
+                        id: segment.id,
+                        activity: segment.activity as 'working' | 'onBreak',
+                        start: new Date(segment.start),
+                        end: segment.end ? new Date(segment.end) : null
+                    }
+                })
+            }
+            return returnObject
+        }) : []
+    } catch (error) {
+        console.error('[fetchSessions] An error occurred:', error);
+        clearLoadingTimeout(); // Ensure timeout is cleared even on error
+        loading.value = false; // Ensure loading is set to false on error
+        // Optionally handle the error in the UI
+    } finally {
+        // Ensure loading is set to false if the timeout didn't trigger
+        if (loadingTimeout) {
+            clearTimeout(loadingTimeout);
+        }
+        loading.value = false;
     }
-]
+}
+
+// perform initial data fetch on component render
+onMounted(async () => {
+    await fetchSessions();
+});
+
+// Watch for changes in the route's query parameters
+watch(
+    () => route.query,
+    async () => {
+        console.log('Query params changed!', route.query);
+        rows.value = Number(route.query.amount) || 10;
+        sortOrder.value = route.query.order === 'desc' ? 1 : -1;
+        await fetchSessions(); // Refetch data when query params change
+    }
+);
+
+// *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
+// *~*~*~*~*~*~* EXPORTING *~*~*~*~*~*~*
+// *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
 
 const dt = ref();
 const exportCSV = () => {
@@ -367,34 +396,14 @@ function exportData(data: { data: any; field: string }) {
     return data.data;
 }
 
-const today = new Date();
-// use the UTC date because the DatePicker seems to be working in UTC
-const currentYear = today.getUTCFullYear();
-const currentMonth = today.getUTCMonth();
-const currentDay = today.getUTCDate();
-const input_data = ref<tableData[]>(sessions.map((session) => {
-
-    const returnObject = {
-        id: session.id,
-        date: session.start,
-        // normalize the date part of these objects to UTC today so the time filter works correctly
-        start_time: new Date(currentYear, currentMonth, currentDay, session.start.getHours(), session.start.getMinutes(), session.start.getSeconds(), session.start.getMilliseconds()),
-        end_time: session.end ? new Date(currentYear, currentMonth, currentDay, session.end.getHours(), session.end.getMinutes(), session.end.getSeconds(), session.end.getMilliseconds()) : null,
-        state: session.state as "closed" | "open",
-        segments: session.segments.map((segment) => {
-            return {
-                id: segment.id,
-                activity: segment.activity as 'working' | 'onBreak',
-                start: segment.start,
-                end: segment.end
-            }
-        })
-    }
-    return returnObject
-}))
-
 const selectedSessions = ref();
+
+// *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
+// *~*~*~*~*~* ROW EXPANSION *~*~*~*~*~*
+// *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
+
 const expandedRows = ref({});
+
 const handleExpand = () => {
     if (Object.keys(expandedRows.value).length !== Object.keys(input_data.value).length) {
         expandedRows.value = input_data.value.reduce((acc: Record<number, boolean>, p) => {
@@ -405,6 +414,10 @@ const handleExpand = () => {
         expandedRows.value = {};
     }
 };
+
+// *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
+// *~*~*~*~*~*~* FILTERING *~*~*~*~*~*~*
+// *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
 
 const filters = ref();
 
@@ -423,6 +436,10 @@ const clearFilter = () => {
     initFilters();
 };
 
+// *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
+// *~*~*~*~*~*~* DELETING *~*~*~*~*~*~*
+// *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
+
 const deleteSelected = () => {
     input_data.value = input_data.value.filter(val => !selectedSessions.value.includes(val));
     selectedSessions.value = null;
@@ -430,6 +447,10 @@ const deleteSelected = () => {
 const deleteRow = (id: number) => {
     input_data.value = input_data.value.filter(val => val.id !== id);
 };
+
+// *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
+// *~*~*~*~*~* CELL EDITING *~*~*~*~*~*
+// *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
 
 // biome-ignore lint/suspicious/noExplicitAny: in this case, the type really can be anything
 const onCellEditComplete = (event: any) => {
@@ -486,6 +507,38 @@ const onCellEditComplete = (event: any) => {
         }
     }
     console.log(`[onCellEditComplete] changed ${field} from ${data[field]} to ${newValue}`)
+};
+
+// *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
+// *~*~*~*~* DATA VIEW UPDATES *~*~*~*~*
+// *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
+
+const onPage = (event: DataTablePageEvent) => {
+    console.log("page change: ", event);
+    // Update the route with the new page and amount
+    router.push({
+        query: {
+            ...route.query,
+            page: event.page + 1, // PrimeVue's page is 0-based
+            amount: event.rows,
+        },
+    });
+    // the amount update is handled by the watch statement
+};
+
+const onSort = (event: DataTableSortEvent) => {
+    console.log("sort change: ", event);
+    // Update the sorting refs
+    sortOrder.value = event.sortOrder ?? 0;
+    sortField.value = typeof event.sortField === 'string' ? event.sortField === 'date' ? 'start' : event.sortField : 'start'
+    // Update the route with the new sorting params
+    router.push({
+        query: {
+            ...route.query,
+            order: event.sortField ? event.sortOrder === 1 ? 'desc' : 'asc' : undefined,
+            sortby: typeof event.sortField === 'string' ? event.sortField === 'date' ? 'start' : event.sortField : undefined
+        },
+    });
 };
 </script>
 

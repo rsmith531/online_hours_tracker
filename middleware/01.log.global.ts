@@ -1,6 +1,7 @@
 // ~/middleware/01.log.global.ts
 import path from 'node:path';
 
+// TODO: add rolling log file functionality so the disk doesn't fill up
 export default defineNuxtRouteMiddleware(async (to) => {
   if (import.meta.client) return;
   console.log('[middleware/requestLog] running logging middleware');

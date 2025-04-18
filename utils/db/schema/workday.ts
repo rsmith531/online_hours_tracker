@@ -20,7 +20,7 @@ export const segments = sqliteTable(
     id: integer().primaryKey({ autoIncrement: true }),
     sessionId: integer('session_id')
       .notNull()
-      .references(() => sessions.id),
+      .references(() => sessions.id, {onUpdate: 'cascade', onDelete: 'cascade'}),
     start: integer({ mode: 'timestamp' }).notNull(),
     end: integer({ mode: 'timestamp' }),
     // https://stackoverflow.com/questions/55142177/how-to-build-a-type-from-enum-values-in-typescript

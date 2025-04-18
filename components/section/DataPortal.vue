@@ -207,6 +207,7 @@ import { FilterMatchMode } from '@primevue/core/api';
 import { H3Error } from 'h3';
 import type { workDataApiResponse } from '../../server/api/workData';
 import type { DataTablePageEvent, DataTableSortEvent } from 'primevue/datatable';
+import { ToastEventBus } from 'primevue';
 
 interface tableData {
     id: number;
@@ -222,6 +223,8 @@ interface tableData {
     }[]
 }
 
+const toast = useToast();
+
 // *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
 // *~*~*~*~* FETCHING & SETUP *~*~*~*~*
 // *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
@@ -230,7 +233,6 @@ const input_data = ref<tableData[]>([])
 
 const router = useRouter();
 const route = useRoute();
-console.log('[DataPortal] got query parameters: ', route.query)
 
 const rows = ref(Number(route.query.amount) || 10);
 const sortOrder = ref(route.query.order === 'desc' ? 1 : -1);
@@ -269,8 +271,6 @@ const fetchSessions = async () => {
     queryParams.append('page', route.query.page as string ?? '1')
     queryParams.append('timezoneOffset', String(new Date().getTimezoneOffset()))
 
-    console.log('[DataPortal] sending query params: ', queryParams)
-
     try {
         // do the fetch
         const sessions = await $fetch<workDataApiResponse | null | H3Error>(
@@ -285,8 +285,6 @@ const fetchSessions = async () => {
             );
             throw new Error(sessions.message);
         }
-
-        console.log('got sessions: ', sessions)
 
         // destructure sessions
         const [sessionData, totalSessions] = sessions ?? [null, null]
@@ -346,7 +344,6 @@ onMounted(async () => {
 watch(
     () => route.query,
     async () => {
-        console.log('Query params changed!', route.query);
         rows.value = Number(route.query.amount) || 10;
         sortOrder.value = route.query.order === 'desc' ? 1 : -1;
         await fetchSessions(); // Refetch data when query params change
@@ -396,7 +393,7 @@ function exportData(data: { data: any; field: string }) {
     return data.data;
 }
 
-const selectedSessions = ref();
+const selectedSessions = ref<tableData[]>([]);
 
 // *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
 // *~*~*~*~*~* ROW EXPANSION *~*~*~*~*~*
@@ -440,43 +437,155 @@ const clearFilter = () => {
 // *~*~*~*~*~*~* DELETING *~*~*~*~*~*~*
 // *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
 
-const deleteSelected = () => {
-    input_data.value = input_data.value.filter(val => !selectedSessions.value.includes(val));
-    selectedSessions.value = null;
+const deleteSelected = async () => {
+    const response = await $fetch<workDataApiResponse | null | H3Error>('/api/workData', {
+        method: 'DELETE',
+        body: {
+            ids: selectedSessions.value?.map((session) => { return session.id })
+        }
+    })
+
+    if (response instanceof H3Error) {
+        console.error(
+            `[DataPortal/deleteSelected] error while deleting sessions ${selectedSessions.value?.map((session) => { return `${session.id}, ` })}: `,
+            response
+        );
+        throw new Error(response.message);
+    }
+
+    if (!response) {
+        input_data.value = input_data.value.filter(val => !selectedSessions.value?.includes(val));
+        selectedSessions.value = [];
+    } else {
+        throw new Error(`[DataPortal/deleteSelected] unexpected state encountered while deleting sessions ${selectedSessions.value.map((session) => { return `${session.id}, ` })}: `)
+    }
 };
-const deleteRow = (id: number) => {
-    input_data.value = input_data.value.filter(val => val.id !== id);
+
+const deleteRow = async (id: number) => {
+    const response = await $fetch<workDataApiResponse | null | H3Error>('/api/workData', {
+        method: 'DELETE',
+        body: {
+            ids: [id],
+        }
+    })
+
+    if (response instanceof H3Error) {
+        console.error(
+            `[DataPortal/deleteSelected] error while deleting session ${id}: `,
+            response
+        );
+
+        ToastEventBus.emit('add', {
+            severity: 'error',
+            summary: `Encountered error while deleting session ${id}: ${response.message}.`,
+            detail: `${response.statusCode}: ${response.statusMessage}\ncause: ${response.cause}\nname: ${response.name}`,
+            life: 4000,
+        });
+        throw new Error(response.message);
+    }
+    if (!response) {
+        input_data.value = input_data.value.filter(val => val.id !== id);
+
+        ToastEventBus.emit('add', {
+            severity: 'success',
+            summary: `Successfully deleted session ${id}.`,
+            life: 4000,
+        });
+    } else {
+        ToastEventBus.emit('add', {
+            severity: 'error',
+            summary: `Encountered unexpected state while deleting session ${id}.`,
+            life: 4000,
+        });
+        throw new Error(`[DataPortal/deleteSelected] unexpected state encountered while deleting session ${id}`)
+    }
 };
 
 // *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
 // *~*~*~*~*~* CELL EDITING *~*~*~*~*~*
 // *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
 
-// biome-ignore lint/suspicious/noExplicitAny: in this case, the type really can be anything
-const onCellEditComplete = (event: any) => {
-    let { data, newValue, field } = event;
-    console.log(event)
+/**
+ * github issue for DatePicker closing too soon in cell
+ * 
+ * https://github.com/primefaces/primevue/issues/7598
+ */
 
+// biome-ignore lint/suspicious/noExplicitAny: in this case, the type really can be anything
+const onCellEditComplete = async (event: any) => {
+    let { data, newValue, field } = event;
+
+    let response: workDataApiResponse | null | H3Error = new H3Error('temporary error');
     switch (field) {
         case 'date': {
-            data[field] = newValue;
+            const newTime = new Date(newValue);
+
+            // get the time out of the old value
+            const timeToSubmit = new Date(
+                newTime.getFullYear(),
+                newTime.getMonth(),
+                newTime.getDate(),
+                data[field].getHours(),
+                data[field].getMinutes(),
+                data[field].getSeconds()
+            )
+
+            response = await $fetch<workDataApiResponse | null | H3Error>('/api/workData', {
+                method: 'POST',
+                body: {
+                    column: 'start',
+                    rowId: data.id,
+                    newValue: timeToSubmit.getTime()
+                }
+            })
+            if (!response) {
+                // successful
+                data[field] = timeToSubmit;
+            }
             break;
         }
         case 'start_time': {
             const newTime = new Date(newValue);
             const existingDate = data[field];
 
-            // keep the existing date component of the object (and the seconds)
-            const updatedTime = new Date(
+            // keep the existing date component of the object (and the seconds) or use today
+            const updatedTime = existingDate ? new Date(
                 existingDate.getFullYear(),
                 existingDate.getMonth(),
                 existingDate.getDate(),
                 newTime.getHours(),
                 newTime.getMinutes(),
                 existingDate.getSeconds()
+            ) : new Date(
+                new Date().getFullYear(),
+                new Date().getMonth(),
+                new Date().getDate(),
+                newTime.getHours(),
+                newTime.getMinutes(),
+                0 // seconds
             );
-            data[field] = updatedTime;
-            // TODO: also update the first segment in this data's segments array
+            // generate a date from the time in newValue and the date in data.date
+            const submittedDate = new Date(
+                data.date.getFullYear(),
+                data.date.getMonth(),
+                data.date.getDate(),
+                newTime.getHours(),
+                newTime.getMinutes(),
+                0
+            )
+
+            response = await $fetch<workDataApiResponse | null | H3Error>('/api/workData', {
+                method: 'POST',
+                body: {
+                    column: 'start',
+                    rowId: data.id,
+                    newValue: submittedDate.getTime()
+                }
+            })
+            if (!response) {
+                // successful
+                data[field] = updatedTime;
+            }
             break;
         }
         case 'end_time': {
@@ -484,21 +593,58 @@ const onCellEditComplete = (event: any) => {
             const existingDate = data[field];
 
             // keep the existing date component of the object (and the seconds)
-            const updatedTime = new Date(
+            const updatedTime = existingDate ? new Date(
                 existingDate.getFullYear(),
                 existingDate.getMonth(),
                 existingDate.getDate(),
                 newTime.getHours(),
                 newTime.getMinutes(),
                 existingDate.getSeconds()
+            ) : new Date(
+                new Date().getFullYear(),
+                new Date().getMonth(),
+                new Date().getDate(),
+                newTime.getHours(),
+                newTime.getMinutes(),
+                0 // seconds
             );
-            data[field] = updatedTime;
-            // TODO: also update the first segment in this data's segments array
+            // generate a date from the time in newValue and the date in data.date
+            const submittedDate = new Date(
+                data.date.getFullYear(),
+                data.date.getMonth(),
+                data.date.getDate(),
+                newTime.getHours(),
+                newTime.getMinutes(),
+                0
+            )
+
+            response = await $fetch<workDataApiResponse | null | H3Error>('/api/workData', {
+                method: 'POST',
+                body: {
+                    column: 'end',
+                    rowId: data.id,
+                    newValue: newValue ? submittedDate.getTime() : null
+                }
+            })
+            if (!response) {
+                // successful
+                data[field] = newValue ? updatedTime : null;
+            }
             break;
         }
         case 'state': {
-            data[field] = newValue;
-            // TODO: if changing to closed, set the end_time of the session and last segment to the current time, else set them to null
+            response = await $fetch<workDataApiResponse | null | H3Error>('/api/workData', {
+                method: 'POST',
+                body: {
+                    column: field,
+                    rowId: data.id,
+                    newValue
+                }
+            })
+            if (!response) {
+                // successful
+                data[field] = newValue;
+            }
             break;
         }
         default: {
@@ -506,7 +652,39 @@ const onCellEditComplete = (event: any) => {
             break;
         }
     }
-    console.log(`[onCellEditComplete] changed ${field} from ${data[field]} to ${newValue}`)
+
+    if (response instanceof H3Error) {
+        console.error(
+            `[DataPortal/deleteSelected] error while changing ${field} from ${data[field]} to ${newValue}: `,
+            response
+        );
+
+        ToastEventBus.emit('add', {
+            severity: 'error',
+            summary: `Encountered error while changing ${field} from ${data[field]} to ${newValue}.`,
+            detail: `${response.statusCode}: ${response.statusMessage}\n
+            cause: ${response.cause}\n
+            name: ${response.name}`,
+            life: 4000,
+        });
+        throw new Error(response.message);
+    }
+    if (!response) {
+        ToastEventBus.emit('add', {
+            severity: 'success',
+            summary: `Successfully updated ${field}`,
+            detail: `${newValue}`,
+            life: 4000,
+        });
+        fetchSessions();
+    } else {
+        ToastEventBus.emit('add', {
+            severity: 'error',
+            summary: `Encountered unexpected state while changing ${field} from ${data[field]} to ${newValue}.`,
+            life: 4000,
+        });
+        throw new Error(`[DataPortal/deleteSelected] unexpected state encountered while changing ${field} from ${data[field]} to ${newValue}`)
+    }
 };
 
 // *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
@@ -514,7 +692,6 @@ const onCellEditComplete = (event: any) => {
 // *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
 
 const onPage = (event: DataTablePageEvent) => {
-    console.log("page change: ", event);
     // Update the route with the new page and amount
     router.push({
         query: {
@@ -527,7 +704,6 @@ const onPage = (event: DataTablePageEvent) => {
 };
 
 const onSort = (event: DataTableSortEvent) => {
-    console.log("sort change: ", event);
     // Update the sorting refs
     sortOrder.value = event.sortOrder ?? 0;
     sortField.value = typeof event.sortField === 'string' ? event.sortField === 'date' ? 'start' : event.sortField : 'start'

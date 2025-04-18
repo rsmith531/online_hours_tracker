@@ -1,10 +1,15 @@
 // ~/server/api/workday.ts
 
 import { defineEventHandler, readBody, createError, type H3Error } from 'h3';
-import { countSessions, getSessions } from '../../utils/db/queries/workday';
+import {
+  countSessions,
+  deleteSessions,
+  editSession,
+  getSessions,
+} from '../../utils/db/queries/workday';
 import { z } from 'zod';
 
-const bodySchema = z.object({
+const getSchema = z.object({
   // derived from the relevant columns of the sessions table
   sortby: z.enum(['id', 'state', 'start', 'start_time', 'end_time']),
   order: z.enum(['asc', 'desc']),
@@ -15,6 +20,17 @@ const bodySchema = z.object({
     .number()
     .min(-14 * 60)
     .max(14 * 60),
+});
+
+const postSchema = z.object({
+    // derived from the relevant columns of the sessions table
+    column: z.enum(['state', 'start', 'end']),
+    rowId: z.coerce.number().min(1),
+    newValue: z.any(),
+  });
+
+const deleteSchema = z.object({
+  ids: z.array(z.coerce.number().positive()),
 });
 
 export type workDataApiResponse = [
@@ -33,7 +49,7 @@ export default defineEventHandler(
     try {
       if (event.method === 'GET') {
         const { sortby, order, amount, page, timezoneOffset } =
-          await getValidatedQuery(event, bodySchema.parse);
+          await getValidatedQuery(event, getSchema.parse);
 
         let response: workDataApiResponse | null = null;
 
@@ -49,11 +65,27 @@ export default defineEventHandler(
       }
 
       if (event.method === 'POST') {
-        const body = await readBody(event);
+        const body = await readValidatedBody(event, postSchema.parse);
+
+        if (body) {
+          let response: workDataApiResponse | null = null;
+
+        //   response = 
+          await editSession(body.column, body.rowId, body.newValue);
+
+          return response;
+        }
+      }
+
+      if (event.method === 'DELETE') {
+        const body = await readValidatedBody(event, deleteSchema.parse);
 
         if (body) {
           const response: workDataApiResponse | null = null;
-          console.warn('[api/WorkData/POST] not implemented');
+
+          await deleteSessions(body.ids);
+
+          return response;
         }
       }
 

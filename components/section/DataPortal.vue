@@ -514,10 +514,13 @@ const deleteRow = async (id: number) => {
 // biome-ignore lint/suspicious/noExplicitAny: in this case, the type really can be anything
 const onCellEditComplete = async (event: any) => {
     let { data, newValue, field } = event;
+    console.log('[DataPortal/onCellEditComplete] data, newValue, field', data, newValue, field)
 
     let response: workDataApiResponse | null | H3Error = new H3Error('temporary error');
     switch (field) {
         case 'date': {
+            console.log(`[DataPortal/onCellEditComplete] ${field} old and new values are ${data[field] === newValue ? 'equal' : 'unequal'}: `, data[field], newValue)
+            if (data[field] === newValue) return;
             const newTime = new Date(newValue);
 
             // get the time out of the old value
@@ -564,6 +567,10 @@ const onCellEditComplete = async (event: any) => {
                 newTime.getMinutes(),
                 0 // seconds
             );
+
+            console.log(`[DataPortal/onCellEditComplete] ${field} old and new values are ${data[field] === updatedTime ? 'equal' : 'unequal'}: `, data[field], updatedTime)
+            if (data[field].getHours() === updatedTime.getHours() && data[field].getMinutes() === updatedTime.getMinutes()) return;
+
             // generate a date from the time in newValue and the date in data.date
             const submittedDate = new Date(
                 data.date.getFullYear(),
@@ -608,6 +615,10 @@ const onCellEditComplete = async (event: any) => {
                 newTime.getMinutes(),
                 0 // seconds
             );
+
+            console.log(`[DataPortal/onCellEditComplete] ${field} old and new values are ${data[field] === updatedTime ? 'equal' : 'unequal'}: `, data[field], updatedTime)
+            if (data[field].getHours() === updatedTime.getHours() && data[field].getMinutes() === updatedTime.getMinutes()) return;
+
             // generate a date from the time in newValue and the date in data.date
             const submittedDate = new Date(
                 data.date.getFullYear(),
@@ -633,6 +644,8 @@ const onCellEditComplete = async (event: any) => {
             break;
         }
         case 'state': {
+            console.log(`[DataPortal/onCellEditComplete] ${field} old and new values are ${data[field] === newValue ? 'equal' : 'unequal'}: `, data[field], newValue)
+            if (data[field] === newValue) return;
             response = await $fetch<workDataApiResponse | null | H3Error>('/api/workData', {
                 method: 'POST',
                 body: {

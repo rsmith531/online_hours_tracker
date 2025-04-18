@@ -41,7 +41,6 @@ export type workDataApiResponse = [
 export default defineEventHandler(
   async (event): Promise<workDataApiResponse | null | H3Error> => {
     // check if request is authorized, throws 401 if not
-    // TODO: figure out why user session doesn't refresh when I reload the /portal page
     await requireUserSession(event);
 
     console.log(`[api/WorkData] got ${event.method} request at ${event.path}`);

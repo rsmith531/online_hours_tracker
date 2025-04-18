@@ -42,13 +42,16 @@
             </Column>
             <Column sortable field="date" header="Date" dataType="date" :showFilterMatchModes="false" showClearButton>
                 <template #body="slotProps">
-                    {{ slotProps.data.date
-                        && slotProps.data.date.toLocaleString('en-US', {
-                            weekday: 'short',
-                            month: 'long',
-                            day: 'numeric',
-                            year: 'numeric',
-                        }) }}
+                    <div style="cursor: pointer; width: fit-content">
+                        {{ slotProps.data.date
+                            && slotProps.data.date.toLocaleString('en-US', {
+                                weekday: 'short',
+                                month: 'long',
+                                day: 'numeric',
+                                year: 'numeric',
+                            })
+                        }}
+                    </div>
                 </template>
                 <template #filter="{ filterModel }">
                     <DatePicker inline v-model="filterModel.value" selectionMode="range" dateFormat="mm/dd/yy" />
@@ -60,12 +63,15 @@
             <Column sortable field="start_time" header="Start" filterField="start_time" dataType='date'
                 :showFilterMatchModes="false"> <!-- showClearButton -->
                 <template #body="slotProps">
-                    {{ slotProps.data.start_time
-                        && slotProps.data.start_time.toLocaleString('en-US', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false,
-                        }) }}
+                    <div style="cursor: pointer; width: fit-content">
+                        {{ slotProps.data.start_time
+                            && slotProps.data.start_time.toLocaleString('en-US', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false,
+                            })
+                        }}
+                    </div>
                 </template>
                 <template #filter="{ filterModel }">
                     <div style="display: flex; flex-direction: column; gap: 1rem">
@@ -97,12 +103,15 @@
                 :showFilterMatchModes="false">
                 <!-- showClearButton -->
                 <template #body="slotProps">
-                    {{ slotProps.data.end_time &&
-                        slotProps.data.end_time.toLocaleString('en-US', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false,
-                        }) }}
+                    <div style="cursor: pointer; width: fit-content">
+                        {{ slotProps.data.end_time &&
+                            slotProps.data.end_time.toLocaleString('en-US', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false,
+                            })
+                        }}
+                    </div>
                 </template>
                 <template #filter="{ filterModel }">
                     <div style="display: flex; flex-direction: column; gap: 1rem">
@@ -132,7 +141,7 @@
             </Column>
             <Column sortable field="state" header="Status" :showFilterMatchModes="false" showClearButton>
                 <template #body="{ data }">
-                    <Tag :value="data.state" :severity="data.state === 'open' ? 'success' : 'danger'" />
+                    <Tag :value="data.state" :severity="data.state === 'open' ? 'success' : 'danger'" style="cursor: pointer;"/>
                 </template>
                 <template #filter="{ filterModel }">
                     <Select v-model="filterModel.value" :options="['open', 'closed']" placeholder="Select One"

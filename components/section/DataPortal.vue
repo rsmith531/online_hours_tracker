@@ -448,11 +448,36 @@ const handleExpand = () => {
 const filters = ref<DataTableFilterMeta>();
 
 const initFilters = () => {
+    const filterBy = route.query.filterBy;
+    let filterValues = route.query.filterValues;
+
+    // Check if filterValues is a string and looks like an array
+    if (typeof filterValues === 'string' && filterValues.startsWith('[') && filterValues.endsWith(']')) {
+        try {
+            // Attempt to parse the string as a JSON array
+            filterValues = JSON.parse(filterValues);
+            console.log('[initFilters] Parsed filterValues', filterValues, typeof filterValues);
+        } catch (e) {
+            console.error('[initFilters] Failed to parse filterValues string:', e);
+            filterValues = null;
+        }
+    }
+
+    console.log('[initFilters] filterBy', filterBy)
+    console.log('[initFilters] filterValues', filterValues, typeof filterValues)
     filters.value = {
-        date: { value: null, matchMode: FilterMatchMode.BETWEEN },
-        start_time: { value: [null, null], matchMode: FilterMatchMode.BETWEEN },
-        end_time: { value: [null, null], matchMode: FilterMatchMode.BETWEEN },
-        state: { value: null, matchMode: FilterMatchMode.EQUALS },
+        date: { value: filterBy === 'start' ? filterValues : null, matchMode: FilterMatchMode.BETWEEN },
+        start_time: {
+            value: filterBy === 'start_time' ? Array.isArray(filterValues) ? filterValues.map((value) => {
+                return value ? new Date(value) : null
+            }) : filterValues : [null, null], matchMode: FilterMatchMode.BETWEEN
+        },
+        end_time: {
+            value: filterBy === 'end_time' ? Array.isArray(filterValues) ? filterValues.map((value) => {
+                return value ? new Date(value) : null
+            }) : filterValues : [null, null], matchMode: FilterMatchMode.BETWEEN
+        },
+        state: { value: filterBy === 'state' ? filterValues : null, matchMode: FilterMatchMode.EQUALS },
     };
 };
 

@@ -2,6 +2,22 @@
 
 # My Workday Tracker
 
+Here to demo the website? Go to [demo.roamers.rest](https://demo.roamers.rest/login) and use these credentials to log in:
+
+<div style="display: flex; flex-direction:row; gap: 2rem; padding-bottom: 1rem;" class="flex-wrap">
+
+<div style="display: flex; flex-direction:column;" class="flex-wrap">
+    <p>Username:</p>
+    <img src="primary_logo.JPG" alt="site primary logo" title="site primary logo" width="700px" style="pointer-events: none" />
+</div>
+
+<div style="display: flex; flex-direction:column;" class="flex-wrap">
+    <p>Password:</p>
+    <img src="secondary_logo.JPG" alt="site secondary logo" title="site secondary logo" width="700px" style="pointer-events: none" height="min-content" class="h-min" />
+</div>
+
+</div>
+
 ## Motivation
 
 After having spent the past while working in a React/Next stack, I decided I had my feet underneath me enough to try learning how to use Vue & Nuxt. I had heard it described as an up and coming competitor in the space that React and Next dominate. With that in mind, I needed a small project to use as the whetstone upon which I'd sharpen my skills.

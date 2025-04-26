@@ -8,12 +8,12 @@ Here to demo the website? Go to [demo.roamers.rest](https://demo.roamers.rest/lo
 
 <div style="display: flex; flex-direction:column;" class="flex-wrap">
     <p>Username:</p>
-    <img src="primary_logo.JPG" alt="site primary logo" title="site primary logo" width="700px" style="pointer-events: none" />
+    <img src="primary_logo.jpg" alt="site primary logo" title="site primary logo" width="700px" style="pointer-events: none" />
 </div>
 
 <div style="display: flex; flex-direction:column;" class="flex-wrap">
     <p>Password:</p>
-    <img src="secondary_logo.JPG" alt="site secondary logo" title="site secondary logo" width="700px" style="pointer-events: none" height="min-content" class="h-min" />
+    <img src="secondary_logo.jpg" alt="site secondary logo" title="site secondary logo" width="700px" style="pointer-events: none" height="min-content" class="h-min" />
 </div>
 
 </div>

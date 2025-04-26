@@ -141,7 +141,8 @@
             </Column>
             <Column sortable field="state" header="Status" :showFilterMatchModes="false" showClearButton>
                 <template #body="{ data }">
-                    <Tag :value="data.state" :severity="data.state === 'open' ? 'success' : 'danger'" style="cursor: pointer;"/>
+                    <Tag :value="data.state" :severity="data.state === 'open' ? 'success' : 'danger'"
+                        style="cursor: pointer;" />
                 </template>
                 <template #filter="{ filterModel }">
                     <Select v-model="filterModel.value" :options="['open', 'closed']" placeholder="Select One"
@@ -215,8 +216,8 @@
 import { FilterMatchMode } from '@primevue/core/api';
 import { H3Error } from 'h3';
 import type { workDataApiResponse } from '../../server/api/workData';
-import type { DataTablePageEvent, DataTableSortEvent } from 'primevue/datatable';
-import { ToastEventBus } from 'primevue';
+import type { DataTableFilterMetaData, DataTablePageEvent, DataTableSortEvent } from 'primevue/datatable';
+import { type DataTableFilterMeta, ToastEventBus } from 'primevue';
 
 interface tableData {
     id: number;
@@ -279,6 +280,12 @@ const fetchSessions = async () => {
     queryParams.append('amount', route.query.amount as string ?? '10')
     queryParams.append('page', route.query.page as string ?? '1')
     queryParams.append('timezoneOffset', String(new Date().getTimezoneOffset()))
+    if (route.query.filterBy) {
+        queryParams.append('filterBy', route.query.filterBy as string);
+    }
+    if (route.query.filterValues) {
+        queryParams.append('filterValues', route.query.filterValues as string);
+    }
 
     try {
         // do the fetch
@@ -292,6 +299,13 @@ const fetchSessions = async () => {
                 '[DataPortal] error while fetching work data from server: ',
                 sessions
             );
+            // Use toast for user feedback
+            toast.add({
+                severity: 'error',
+                summary: 'Error fetching data',
+                detail: sessions.message,
+                life: 5000
+            });
             throw new Error(sessions.message);
         }
 
@@ -332,6 +346,12 @@ const fetchSessions = async () => {
         }) : []
     } catch (error) {
         console.error('[fetchSessions] An error occurred:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Data fetch failed',
+            detail: error instanceof Error ? error.message : 'An unknown error occurred',
+            life: 5000
+        });
         clearLoadingTimeout(); // Ensure timeout is cleared even on error
         loading.value = false; // Ensure loading is set to false on error
         // Optionally handle the error in the UI
@@ -425,7 +445,7 @@ const handleExpand = () => {
 // *~*~*~*~*~*~* FILTERING *~*~*~*~*~*~*
 // *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
 
-const filters = ref();
+const filters = ref<DataTableFilterMeta>();
 
 const initFilters = () => {
     filters.value = {
@@ -439,8 +459,98 @@ const initFilters = () => {
 initFilters();
 
 const clearFilter = () => {
+    router.push({
+        query: {
+            ...route.query,
+            filterBy: undefined,
+            filterValues: undefined
+        },
+    });
     initFilters();
 };
+
+// Watch the filters ref for changes and update the route
+watch(filters, async (newFilters, oldFilters) => {
+    console.log('[DataPortal] filters changed');
+    console.log('    from: ', oldFilters)
+    console.log('      to: ', newFilters)
+
+    let filterBy: string | undefined;
+    let filterValues: string | undefined;
+
+    // Iterate through filter keys to find the active filter
+    // Prioritize in a specific order if needed, here just taking the first active one
+    if (!filters.value) throw new Error('[DataPortal] could not filter because filters.value is not defined')
+    const filterKeys = Object.keys(filters.value) //as (keyof typeof filters.value)[]; // Get keys with correct type hint
+
+    console.log('[DataPortal] filter keys are: ', filterKeys)
+
+    for (const key of filterKeys) {
+        const filterState = filters.value[key] as DataTableFilterMetaData;
+        const filterValue = filterState.value;
+        console.log('[DataPortal] filter state: ', filterState)
+
+        // Check if the filter has an active value
+        const isActive = Array.isArray(filterValue)
+            ? filterValue.some(val => val !== null) // For tuples, check if at least one element is not null
+            : filterValue !== null && filterValue !== undefined && filterValue !== ''; // For other types, check for non-empty value
+
+
+        console.log(`[DataPortal] ${key} has ${!isActive && 'no'} active filters`)
+        if (isActive) {
+            // Map frontend filter keys to backend filterBy keys
+            const frontendToBackendFilterMap: Record<string, string> = {
+                'date': 'start', // Frontend 'date' field corresponds to backend 'start' timestamp for date range filter
+                'start_time': 'start_time',
+                'end_time': 'end_time',
+                'state': 'state',
+                // Add other mappings if necessary
+            };
+
+            // Map the frontend key to the backend filterBy name
+            const backendFilterKey = frontendToBackendFilterMap[key];
+            console.log(`[DataPortal] converted ${key} to ${backendFilterKey} for the back-end filters`)
+            if (backendFilterKey) {
+                filterBy = backendFilterKey;
+
+                // Serialize the filter value for the URL
+                if (backendFilterKey === 'state') {
+                    // State filter value is already a string ('open' | 'closed')
+                    filterValues = String(filterValue);
+                } else {
+                    // Date/Time filter value is a [Date | null, Date | null] tuple
+                    // Convert Date objects to ISO strings or timestamps for serialization
+                    // It's better to send ISO strings as they retain more info than unix timestamps,
+                    // and Zod can coerce them back to Dates.
+                    const serializableTuple = Array.isArray(filterValue) ? filterValue.map(date => date instanceof Date ? date.toISOString() : null) : filterValue;
+                    console.log('[DataPortal] got serializableTuple', serializableTuple)
+                    try {
+                        filterValues = JSON.stringify(serializableTuple);
+                        console.log('[DataPortal] serialized to ', filterValues)
+                    } catch (e) {
+                        console.error(`[DataPortal] Failed to serialize filter value for ${key}:`, filterValue, e);
+                        // If serialization fails, don't apply this filter
+                        filterBy = undefined;
+                        filterValues = undefined;
+                        break; // Stop processing filters
+                    }
+                }
+                break; // Found an active filter, apply it and stop
+            }
+        }
+    }
+
+    console.log(`[DataTable] adding ${filterBy} and ${filterValues} to query params`)
+
+    await router.push({
+        query: {
+            ...route.query,
+            filterBy: filterBy,
+            filterValues: filterValues
+        },
+    });
+
+}, { deep: true });
 
 // *~*~*~*~*~*~**~*~*~*~*~*~**~*~*~*~*~*
 // *~*~*~*~*~*~* DELETING *~*~*~*~*~*~*

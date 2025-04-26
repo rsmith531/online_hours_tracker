@@ -14,6 +14,8 @@ import {
   lte,
   sql,
   inArray,
+  type SQL,
+  or,
 } from 'drizzle-orm';
 import { db } from '../client';
 import { z } from 'zod';
@@ -112,7 +114,14 @@ export async function getSessions(
   },
   amount: number,
   page: number,
-  timezoneOffset: number
+  timezoneOffset: number,
+  filter?: {
+    column:
+      | Extract<keyof typeof sessions.$inferSelect, 'start' | 'state'>
+      | 'start_time'
+      | 'end_time';
+    value: string | [Date | null, Date | null];
+  }
 ) {
   const offset = (page - 1) * amount;
   const timezoneOffsetSeconds = timezoneOffset * 60;
@@ -121,11 +130,258 @@ export async function getSessions(
     `[getSessions] sorting ${sort.column} by ${sort.order}\n    Getting ${amount} rows by offset ${offset} with timezone offset ${timezoneOffset}`
   );
 
-  // create a common table expression to ensure it gets `amount` unique rows
+  let whereCondition: SQL | undefined;
+  if (filter) {
+    console.log(`[getSessions] filtering ${filter.column} by `, filter.value);
+    switch (filter.column) {
+      case 'state': {
+        if (typeof filter.value === 'string') {
+          whereCondition = eq(sessions.state, filter.value);
+        } else {
+          console.error(
+            `[getSessions] ${filter.value} is an invalid filter type for ${filter.column} column.`
+          );
+        }
+        break;
+      }
+      case 'start': {
+        if (Array.isArray(filter.value)) {
+          const [startDate, endDate] = filter.value;
+          const conditions: SQL[] = [];
+          if (startDate) {
+            conditions.push(gte(sessions.start, startDate));
+          }
+          if (endDate) {
+            conditions.push(lte(sessions.start, endDate));
+          }
+          if (conditions.length > 0) {
+            whereCondition = and(...conditions);
+          }
+        } else {
+          console.error(
+            `[getSessions] ${filter.value} is an invalid filter type for ${filter.column} column.`
+          );
+        }
+        break;
+      }
+      case 'start_time': {
+        if (Array.isArray(filter.value)) {
+          const [startTime, endTime] = filter.value;
+          const dbStartTimeWithOffsetSql = sql<string>`strftime('%H:%M:%S', ${sessions.start} - ${timezoneOffsetSeconds}, 'unixepoch')`;
+
+
+          // Helper function to get time in HH:MM:SS format relative to UTC
+          const getFilterTimeInTargetTimezoneString = (
+            date: Date,
+            offsetSeconds: number
+          ): string => {
+            // Get the UTC timestamp in seconds
+            const utcTimestampSeconds = date.getTime() / 1000;
+            // Add the offset to the UTC timestamp to find the equivalent timestamp in the target timezone
+            const targetTimestampSeconds = utcTimestampSeconds - offsetSeconds;
+            // Create a new Date object from this adjusted timestamp
+            const targetDate = new Date(targetTimestampSeconds * 1000);
+            // Get the time components from this adjusted Date object using UTC methods.
+            // This effectively gives the time in the target timezone.
+            const hours = targetDate.getUTCHours().toString().padStart(2, '0');
+            const minutes = targetDate
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0');
+            const seconds = targetDate
+              .getUTCSeconds()
+              .toString()
+              .padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
+          };
+
+          let timeFilterCondition: SQL | undefined;
+          if (startTime && endTime) {
+            // Both start and end filters are present. Apply the midnight crossing logic.
+
+            // Convert filter times from UTC to the target timezone for comparison
+            const filterStartTimeTargetTZ = getFilterTimeInTargetTimezoneString(
+              startTime,
+              timezoneOffsetSeconds
+            );
+            const filterEndTimeTargetTZ = getFilterTimeInTargetTimezoneString(
+              endTime,
+              timezoneOffsetSeconds
+            );
+
+            // Create the individual comparison conditions.
+            // Within this block, startTime and endTime are guaranteed to be Date objects.
+            const gteCondition = gte(
+              dbStartTimeWithOffsetSql,
+              filterStartTimeTargetTZ
+            );
+            const lteCondition = lte(
+              dbStartTimeWithOffsetSql,
+              filterEndTimeTargetTZ
+            );
+
+            // Determine if the range crosses midnight based on the filter values IN THE TARGET TIMEZONE
+            if (filterStartTimeTargetTZ <= filterEndTimeTargetTZ) {
+              // Range does NOT cross midnight (e.g., 09:00 to 17:00 in user's time)
+              // Condition is: (db_time_with_offset >= filter_start_time_target_tz) AND (db_time_with_offset <= filter_end_time_target_tz)
+              timeFilterCondition = and(gteCondition, lteCondition);
+            } else {
+              // Range crosses midnight (e.g., 20:00 to 03:00 in user's time)
+              // Condition is: (db_time_with_offset >= filter_start_time_target_tz) OR (db_time_with_offset <= filter_end_time_target_tz)
+              timeFilterCondition = or(gteCondition, lteCondition);
+            }
+          } else if (startTime) {
+            // Only range start time is specified (e.g., >= 09:00 in user's time)
+
+            // Convert filter start time from UTC to the target timezone
+            const filterStartTimeTargetTZ = getFilterTimeInTargetTimezoneString(
+              startTime,
+              timezoneOffsetSeconds
+            );
+            timeFilterCondition = gte(
+              dbStartTimeWithOffsetSql,
+              filterStartTimeTargetTZ
+            );
+          } else if (endTime) {
+            // Only range end time is specified (e.g., <= 17:00 in user's time)
+
+            // Convert filter end time from UTC to the target timezone
+            const filterEndTimeTargetTZ = getFilterTimeInTargetTimezoneString(
+              endTime,
+              timezoneOffsetSeconds
+            );
+            timeFilterCondition = lte(
+              dbStartTimeWithOffsetSql,
+              filterEndTimeTargetTZ
+            );
+          }
+          // Assign the resulting time filter condition to whereCondition
+          whereCondition = timeFilterCondition;
+        } else {
+          console.error(
+            `[getSessions] ${filter.value} is an invalid filter type for ${filter.column} column.`
+          );
+        }
+        break;
+      }
+      // TODO: consolidate the exact same logic from here and start_time into one
+      case 'end_time': {
+        if (Array.isArray(filter.value)) {
+          const [startTime, endTime] = filter.value;
+          const dbStartTimeWithOffsetSql = sql<string>`strftime('%H:%M:%S', ${sessions.end} - ${timezoneOffsetSeconds}, 'unixepoch')`;
+
+
+          // Helper function to get time in HH:MM:SS format relative to UTC
+          const getFilterTimeInTargetTimezoneString = (
+            date: Date,
+            offsetSeconds: number
+          ): string => {
+            // Get the UTC timestamp in seconds
+            const utcTimestampSeconds = date.getTime() / 1000;
+            // Add the offset to the UTC timestamp to find the equivalent timestamp in the target timezone
+            const targetTimestampSeconds = utcTimestampSeconds - offsetSeconds;
+            // Create a new Date object from this adjusted timestamp
+            const targetDate = new Date(targetTimestampSeconds * 1000);
+            // Get the time components from this adjusted Date object using UTC methods.
+            // This effectively gives the time in the target timezone.
+            const hours = targetDate.getUTCHours().toString().padStart(2, '0');
+            const minutes = targetDate
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0');
+            const seconds = targetDate
+              .getUTCSeconds()
+              .toString()
+              .padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
+          };
+
+          let timeFilterCondition: SQL | undefined;
+          if (startTime && endTime) {
+            // Both start and end filters are present. Apply the midnight crossing logic.
+
+            // Convert filter times from UTC to the target timezone for comparison
+            const filterStartTimeTargetTZ = getFilterTimeInTargetTimezoneString(
+              startTime,
+              timezoneOffsetSeconds
+            );
+            const filterEndTimeTargetTZ = getFilterTimeInTargetTimezoneString(
+              endTime,
+              timezoneOffsetSeconds
+            );
+
+            // Create the individual comparison conditions.
+            // Within this block, startTime and endTime are guaranteed to be Date objects.
+            const gteCondition = gte(
+              dbStartTimeWithOffsetSql,
+              filterStartTimeTargetTZ
+            );
+            const lteCondition = lte(
+              dbStartTimeWithOffsetSql,
+              filterEndTimeTargetTZ
+            );
+
+            // Determine if the range crosses midnight based on the filter values IN THE TARGET TIMEZONE
+            if (filterStartTimeTargetTZ <= filterEndTimeTargetTZ) {
+              // Range does NOT cross midnight (e.g., 09:00 to 17:00 in user's time)
+              // Condition is: (db_time_with_offset >= filter_start_time_target_tz) AND (db_time_with_offset <= filter_end_time_target_tz)
+              timeFilterCondition = and(gteCondition, lteCondition);
+            } else {
+              // Range crosses midnight (e.g., 20:00 to 03:00 in user's time)
+              // Condition is: (db_time_with_offset >= filter_start_time_target_tz) OR (db_time_with_offset <= filter_end_time_target_tz)
+              timeFilterCondition = or(gteCondition, lteCondition);
+            }
+          } else if (startTime) {
+            // Only range start time is specified (e.g., >= 09:00 in user's time)
+
+            // Convert filter start time from UTC to the target timezone
+            const filterStartTimeTargetTZ = getFilterTimeInTargetTimezoneString(
+              startTime,
+              timezoneOffsetSeconds
+            );
+            timeFilterCondition = gte(
+              dbStartTimeWithOffsetSql,
+              filterStartTimeTargetTZ
+            );
+          } else if (endTime) {
+            // Only range end time is specified (e.g., <= 17:00 in user's time)
+
+            // Convert filter end time from UTC to the target timezone
+            const filterEndTimeTargetTZ = getFilterTimeInTargetTimezoneString(
+              endTime,
+              timezoneOffsetSeconds
+            );
+            timeFilterCondition = lte(
+              dbStartTimeWithOffsetSql,
+              filterEndTimeTargetTZ
+            );
+          }
+          // Assign the resulting time filter condition to whereCondition
+          whereCondition = timeFilterCondition;
+        } else {
+          console.error(
+            `[getSessions] ${filter.value} is an invalid filter type for ${filter.column} column.`
+          );
+        }
+        break;
+      }
+      default: {
+        console.warn(
+          `[getSessions] filtering for ${filter.column} column is not implemented.`
+        );
+      }
+    }
+  }
+
+  // create a common table expression to ensure it gets `amount` unique rows.
+  // Otherwise it will get `amount` rows that are thrown off by duplicates of a
+  // session that has multiple segments (resulting in multiple rows due to the
+  // join)
   const limitedSessions = db.$with('limited_sessions').as(
     db
       .select({ id: sessions.id })
       .from(sessions)
+      .where(whereCondition)
       .orderBy(
         sort.column === 'start_time' || sort.column === 'end_time'
           ? sort.order === 'asc'
@@ -154,10 +410,8 @@ export async function getSessions(
     .innerJoin(sessions, eq(limitedSessions.id, sessions.id))
     .leftJoin(segments, eq(sessions.id, segments.sessionId));
 
-  console.log(
-    `[getSessions] got results in order ${response.map((element) => element.sessions.id)}`
-  );
-
+  // take the rows with the same session id and wrap them all up into one row
+  // with its segments as an array property
   const result: (InferSelectModel<typeof sessions> & {
     segments: InferSelectModel<typeof segments>[];
   })[] = response.reduce<
@@ -182,9 +436,8 @@ export async function getSessions(
   }, []);
 
   console.log(
-    `[getSessions] returning results in order ${result.map((element) => element.id)}`
+    `[getSessions] returning ${result.length} results in order ${result.map((element) => element.id)}`
   );
-  console.log(`[getSessions] found ${result.length} rows`);
 
   return result;
 }
@@ -315,6 +568,85 @@ export async function editSession(
 
 export async function countSessions() {
   return await db.$count(sessions);
+}
+
+/**
+ * Updates the start of the chosen session to a new date. Also updates the session's earliest segment to ensure they stay in alignment.
+ */
+export async function setSessionStart(
+  rowId: typeof sessions.$inferSelect.id,
+  startDate: typeof sessions.$inferSelect.start
+): Promise<void> {
+  // update the session start value
+  await db
+    .update(sessions)
+    .set({ start: startDate })
+    .where(eq(sessions.id, rowId));
+  // update the earliest segment for the given sessionId
+  await db
+    .update(segments)
+    .set({ start: startDate })
+    .orderBy(asc(segments.start))
+    .limit(1)
+    .where(eq(segments.sessionId, rowId));
+}
+
+/**
+ * Updates the end of the chosen session to a new date or null.
+ *
+ * There is special consideration for identifying which of the session's segments needs to be updated to remain in sync.
+ *
+ * If the end is being set to null, we know that we can just get the segment with the latest end date.
+ *
+ * If the end is being set to a new date, the existing end date may already either be
+ *
+ * 1. null (when setting a session from open to closed) or
+ * 2. a date (when updating a closed session to a new closing time)
+ *
+ * Therefore, we first check if there is a null segment aand update that one, or find the latest end segment and update that one.
+ */
+export async function setSessionEnd(
+  rowId: typeof sessions.$inferSelect.id,
+  endDate: typeof sessions.$inferSelect.end
+): Promise<void> {
+  // set the session.end column to newValue
+  await updateSessionEnd(rowId, endDate);
+  // set the latest segment.end to newValue or null
+  if (endDate) {
+    // check if there is a null segment for this session
+    const nullSegment = await db
+      .select({ id: segments.id })
+      .from(segments)
+      .where(and(eq(segments.sessionId, rowId), isNull(segments.end)))
+      .limit(1);
+    if (nullSegment.length > 0) {
+      // if there is one, update it
+      await db
+        .update(segments)
+        .set({ end: endDate })
+        .where(and(eq(segments.sessionId, rowId), isNull(segments.end)));
+    } else if (nullSegment.length === 0) {
+      // otherwise, update the latest segment for the given session
+      await db
+        .update(segments)
+        .set({ end: endDate })
+        .orderBy(desc(segments.end))
+        .limit(1)
+        .where(eq(segments.sessionId, rowId));
+    } else {
+      console.error('[setSessionEnd] nullSegment: ', nullSegment);
+      throw new Error(
+        `[setSessionEnd] encountered unexpected state while setting the segment for session ${rowId} to ${endDate}`
+      );
+    }
+  } else {
+    await db
+      .update(segments)
+      .set({ end: null })
+      .orderBy(desc(segments.end))
+      .limit(1)
+      .where(eq(segments.sessionId, rowId));
+  }
 }
 
 export async function getSessionsForWeek(

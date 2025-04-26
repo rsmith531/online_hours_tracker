@@ -100,6 +100,21 @@ Trying to stick with my existing libraries, I looked at Primevue's [Timeline](ht
 
 I landed on [**D3.js**](https://d3js.org/d3-shape/line). There's [a lot of mixed emotions](https://www.reddit.com/r/d3js/comments/1230xcm/d3_is_going_to_be_made_irrelevant_by_its/) about this older package, but it felt like a box of Legos you could use to piece together some really unique builds. The library was designed during a time before front-end frameworks really embraced reactivity and virtual DOMs, so it took a little haranguing to get it working right in Vue. I'm not convinced my implementation is the most efficient or cleanest, but it sure does look nifty and perfectly achieves the design requirements I set out with.
 
+### Data Editor
+
+Man, oh man. I was pretty confident this would be a challenging thing to implement. Even still it was harder than I anticipated. My basic idea was to use [**PrimeVue's DataTable component**](https://primevue.org/datatable/) to display an interactive table where the user could filter, sort, edit, and delete data about their workday history. I started with some sample data loaded into memory and did these operations solely on the front-end just to get the component in place without worrying about the complexities of the back-end logic. Then, I hooked up the features to a back-end API endpoint one by one: fetching the live data, editing cells, pagination and sorting, deleting rows, and finally filtering.
+
+I'm not convinced this was the best way to go about this implementation. I think I ended up with cluttered, inefficient and disorganized code. This is because the DataTable component's front-end implementation of table operations is very powerful and someone spent a lot of time thinking about how to make it great. However, converting it to back-end table operations was not always a 1:1 match.  
+
+By far the most difficult aspect was managing the shape of the data between the front-end, back-end, and database:
+
+1. The front-end displays start and end times, which are not columns in the database.
+2. The application uses Date objects, but fetch calls convert them into strings.
+3. The back-end had to interpret the generated start and end *times* to pull the correct data from the start and end *date* columns in a way that is both sortable and filterable.
+4. The entire application needs to properly handle requests coming from clients in any timezone.
+
+So, I did the best that I could to overcome the challenges and did, however clumsily that turned out to be. I started getting major project fatigue towards the end of it, and I had to remember why I did it in the first place: to learn about some web technologies I hadn't yet experienced. No one is paying me to do it, I'm the only user of the platform, and I'm not working on it full-time to get it anywhere close to perfect.
+
 ### Security
 
 In today's internet, a website won't survive very long without some protection. Security is hard, one poorly written line of code and suddenly some bad actor has your [uranium enrichment facility on the fritz](https://en.wikipedia.org/wiki/Stuxnet#Natanz_nuclear_facilities) or you're [leaking everyone's DNA all over the internet](https://en.wikipedia.org/wiki/23andMe_data_leak)¹. This is why I've entrusted my site's security to [**`nuxt-auth-utils`**](https://nuxt.com/modules/auth-utils) and [**`nuxt-security`**](https://nuxt.com/modules/security). This is not a project to explore secure design practices, and the data stored on it is not particularly sensitive, so I wasn't going to spend a lot of time on it. But I also didn't want to put it all out there without some sort of defense. To the white hat folks out there, please [email me](mailto:security@roamers.rest) if you find something egregiously wrong with my website's security.

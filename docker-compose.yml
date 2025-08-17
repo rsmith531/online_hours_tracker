@@ -1,0 +1,29 @@
+#docker-compose.yml
+
+services:
+  online_hours_tracker:
+    # image: rsmith531/online_hours_tracker:latest
+    build: .
+    container_name: online_hours_tracker
+    restart: always
+    ports:
+      #  host:container
+      - "3001:3000"
+    environment:
+      # sourced from repository secrets
+      NUXT_SESSION_PASSWORD: ${NUXT_SESSION_PASSWORD}
+      NUXT_LOGIN_USERNAME: ${NUXT_LOGIN_USERNAME}
+      NUXT_LOGIN_PASSWORD: ${NUXT_LOGIN_PASSWORD}
+      NUXT_PUBLIC_LOGIN_NAME: ${NUXT_PUBLIC_LOGIN_NAME}
+      NUXT_PUBLIC_VAPID_PUBLIC_KEY: ${NUXT_PUBLIC_VAPID_PUBLIC_KEY}
+      NUXT_VAPID_PRIVATE_KEY: ${NUXT_VAPID_PRIVATE_KEY}
+      NUXT_PUBLIC_SOCKET_NAMESPACE: "/lupine"
+      # see Dockerfile to make sure the paths match
+      NUXT_DB_FILE_NAME: /app/data/workday_data.sqlite
+    volumes:
+      # persist the SQLite database file on the host machine
+      - online_hours_tracker_data:/app/data
+
+volumes:
+  online_hours_tracker_data:
+    driver: local

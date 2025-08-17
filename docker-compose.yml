@@ -1,9 +1,8 @@
-#docker-compose.yml
+# docker-compose.yml
 
 services:
   online_hours_tracker:
-    # image: rsmith531/online_hours_tracker:latest
-    build: .
+    image: ghcr.io/rsmith531/online_hours_tracker:latest
     container_name: online_hours_tracker
     restart: always
     ports:

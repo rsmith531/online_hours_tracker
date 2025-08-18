@@ -78,13 +78,6 @@ export default defineEventHandler(
       if (event.method === 'POST') {
         const body = await readBody(event);
         const io = getIO();
-        const runtime = useRuntimeConfig();
-        console.log(
-          `[api/workday] socket listeners at namespace ${runtime.public.socketNamespace}: `,
-          (await io.fetchSockets()).map((socket) => {
-            return socket.id;
-          })
-        );
 
         if (body) {
           let response: WorkdayApiResponse | null = null;

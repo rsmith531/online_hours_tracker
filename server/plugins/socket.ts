@@ -4,47 +4,13 @@ import type { NitroApp } from 'nitropack';
 import { Server as Engine } from 'engine.io';
 import { Server } from 'socket.io';
 import { defineEventHandler } from 'h3';
-import { createAdapter } from '@socket.io/cluster-adapter';
-import { setupWorker } from '@socket.io/sticky';
-import { createServer } from 'node:http';
 
 const runtime = useRuntimeConfig();
-let io: Server;
+const io = new Server();
 
-if (runtime.public.environment !== 'development') {
-  try {
-    console.log(
-      `[socket] runtime environment was ${runtime.public.environment}, configuring socket for prod.`
-    );
-    // configure the socket to work with pm2 in prod
-    const httpServer = createServer();
-    io = new Server(httpServer);
-
-    // allow socket packets to be broadcast to all clients regardless of node they are connected to
-    io.adapter(createAdapter());
-
-    // enable sticky sessions so that requests from a client always go back to the original node it opened a socket with
-    setupWorker(io);
-  } catch (error) {
-    console.error(
-      '[socket] encountered an error while configuring for prod: ',
-      error
-    );
-  }
-} else {
-  try {
-    console.log(
-      `[socket] runtime environment was ${runtime.public.environment}, configuring socket for development.`
-    );
-    // configure the socket to work in dev
-    io = new Server();
-  } catch (error) {
-    console.error(
-      '[socket] encountered an error while configuring for dev: ',
-      error
-    );
-  }
-}
+console.log(
+  `[socket] runtime environment was ${runtime.public.environment}, configuring socket for development.`
+);
 
 export default defineNitroPlugin((nitroApp: NitroApp) => {
   const engine = new Engine();
@@ -52,7 +18,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
   io.bind(engine);
 
   // create a namespace for this particular instance to avoid colliding with other tenants
-  io.of(runtime.public.socketNamespace)
+  io.of(runtime.public.socketNamespace);
 
   io.on('connection', (socket) => {
     console.log(`[socketServer] sees new connection: ${socket.id}`);

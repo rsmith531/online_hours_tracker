@@ -57,7 +57,7 @@ jobs:
       
       - name: Deploy to VPS via SSH
         uses: appleboy/ssh-action@v1
-        env: |
+        env:
             NUXT_SESSION_PASSWORD: ${{ secrets.NUXT_SESSION_PASSWORD }}
             NUXT_LOGIN_USERNAME: ${{ secrets.NUXT_LOGIN_USERNAME }}
             NUXT_LOGIN_PASSWORD: ${{ secrets.NUXT_LOGIN_PASSWORD }}

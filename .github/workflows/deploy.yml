@@ -61,6 +61,17 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: |
+            NUXT_SESSION_PASSWORD=${{ secrets.NUXT_SESSION_PASSWORD }}
+            NUXT_LOGIN_USERNAME=${{ secrets.NUXT_LOGIN_USERNAME }}
+            NUXT_LOGIN_PASSWORD=${{ secrets.NUXT_LOGIN_PASSWORD }}
+            NUXT_PUBLIC_LOGIN_NAME=${{ secrets.NUXT_PUBLIC_LOGIN_NAME }}
+            NUXT_PUBLIC_VAPID_PUBLIC_KEY=${{ secrets.NUXT_PUBLIC_VAPID_PUBLIC_KEY }}
+            NUXT_VAPID_PRIVATE_KEY=${{ secrets.NUXT_VAPID_PRIVATE_KEY }}
+            NUXT_PUBLIC_ENVIRONMENT=${{ secrets.NUXT_PUBLIC_ENVIRONMENT }}
+            NUXT_PUBLIC_SOCKET_NAMESPACE=${{ secrets.NUXT_PUBLIC_SOCKET_NAMESPACE }}
+            # Also pass your repository name for consistent image tagging on the VPS
+            GITHUB_REPOSITORY=${{ github.repository }}
           script: |
             mkdir -p "${{ env.DEPLOY_PATH }}"
             cd ${{ env.DEPLOY_PATH }}

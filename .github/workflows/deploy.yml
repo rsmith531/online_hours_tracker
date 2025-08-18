@@ -75,6 +75,12 @@ jobs:
           script: |
             mkdir -p "${{ env.DEPLOY_PATH }}"
             cd ${{ env.DEPLOY_PATH }}
+
+            
+            echo "Environment variables available on VPS:"
+            echo "NUXT_LOGIN_USERNAME: $NUXT_LOGIN_USERNAME"
+            echo "NUXT_LOGIN_PASSWORD: $NUXT_LOGIN_PASSWORD"
+            echo "NUXT_PUBLIC_ENVIRONMENT: $NUXT_PUBLIC_ENVIRONMENT"
             
             # Login to GitHub Container Registry
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin

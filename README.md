@@ -2,7 +2,7 @@
 
 # My Workday Tracker
 
-Here to demo the website? Reach out to me at [inquiries@roamers.rest](mailto:inquiries@roamers.rest) or on LinkedIn for more information.
+Here to demo the website? Reach out to me at [inquiries@roamers.rest](mailto:inquiries@roamers.rest) or on [LinkedIn](https://www.linkedin.com/in/ryan-smith-163889173/) for more information.
 
 </div>
 

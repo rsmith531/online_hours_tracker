@@ -2,19 +2,7 @@
 
 # My Workday Tracker
 
-Here to demo the website? Go to [demo.roamers.rest](https://demo.roamers.rest/login) and use these credentials to log in:
-
-<div style="display: flex; flex-direction:row; gap: 2rem; padding-bottom: 1rem;" class="flex-wrap">
-
-<div style="display: flex; flex-direction:column;" class="flex-wrap">
-    <p>Username:</p>
-    <img src="primary_logo.jpg" alt="site primary logo" title="site primary logo" width="700px" style="pointer-events: none" />
-</div>
-
-<div style="display: flex; flex-direction:column;" class="flex-wrap">
-    <p>Password:</p>
-    <img src="secondary_logo.jpg" alt="site secondary logo" title="site secondary logo" width="700px" style="pointer-events: none" height="min-content" class="h-min" />
-</div>
+Here to demo the website? Reach out to me at [inquiries@roamers.rest](mailto:inquiries@roamers.rest) or on LinkedIn for more information.
 
 </div>
 
